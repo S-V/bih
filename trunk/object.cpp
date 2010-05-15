@@ -29,6 +29,11 @@ Face* Object::getFace(int index)
     return m_faces[index];
 }
 
+vector<Face*>& Object::getPrimitives()
+{
+    return m_faces;
+}
+
 void Object::addVertex(Vertex* vertex)
 {
     m_vertices.push_back(vertex);
