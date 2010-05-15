@@ -17,12 +17,22 @@ Rect::~Rect()
 
 }
 
-const Vec& Rect::min()
+Vec& Rect::min()
 {
     return m_min;
 }
 
-const Vec& Rect::max()
+Vec& Rect::max()
+{
+    return m_max;
+}
+
+const Vec& Rect::min() const
+{
+    return m_min;
+}
+
+const Vec& Rect::max() const
 {
     return m_max;
 }

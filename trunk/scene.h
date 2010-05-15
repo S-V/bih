@@ -22,11 +22,11 @@ public:
     void setBoundingBox(const Rect& boundingBox);
 
     void setCamera(const Vec& eye, const Vec& lookat, const Vec& up, const double& near, const double& fovx);
-    const Vec& getEye();
-    const Vec& getLookat();
-    const Vec& getUp();
-    const double& getNear();
-    const double& getFovx(); 
+    const Vec& getEye() const;
+    const Vec& getLookat() const;
+    const Vec& getUp() const;
+    const double& getNear() const;
+    const double& getFovx() const; 
 
 private:
     //objects
