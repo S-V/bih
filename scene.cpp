@@ -16,6 +16,13 @@ Scene::~Scene()
 void Scene::addObject(Object* object)
 {
     m_objects.push_back(object);
+
+    if(m_objects.size()==1)
+        m_boundingBox = m_objects[0]->boundingBox();
+    else
+    {
+        //TODO: multiple objects
+    }
 }
 
 Object* Scene::getObject(int index)
@@ -43,27 +50,27 @@ void Scene::setCamera(const Vec& eye, const Vec& lookat, const Vec& up, const do
     m_fovx = fovx;
 }
 
-const Vec& Scene::getEye()
+const Vec& Scene::getEye() const
 {
     return m_eye;
 }
 
-const Vec& Scene::getLookat()
+const Vec& Scene::getLookat() const
 {
     return m_lookat;
 }
  
-const Vec& Scene::getUp()
+const Vec& Scene::getUp() const
 {
     return m_up;
 }
  
-const double& Scene::getNear()
+const double& Scene::getNear() const
 {
     return m_near;
 }
 
-const double& Scene::getFovx()
+const double& Scene::getFovx() const
 {
     return m_fovx;
 } 

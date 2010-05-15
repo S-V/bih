@@ -10,8 +10,11 @@ public:
     Rect(const Vec& min, const Vec& max);
     virtual ~Rect();
 
-    const Vec& min();
-    const Vec& max();
+    Vec& min();
+    Vec& max();
+
+    const Vec& min() const;
+    const Vec& max() const;
 
     Rect& operator = (const Rect& another);
 

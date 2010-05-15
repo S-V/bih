@@ -1,7 +1,7 @@
 # output file and main
 
-myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o
-	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o
+myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o
+	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o
 
 main.o: main.cpp
 	g++ -c main.cpp
@@ -25,6 +25,12 @@ object.o: object.cpp object.h
 
 scene.o: scene.cpp scene.h
 	g++ -c scene.cpp
+
+image.o: image.cpp image.h
+	g++ -c image.cpp
+
+ray.o: ray.cpp ray.h
+	g++ -c ray.cpp
 
 clean:
 	rm *.o ./bin/myBIH.out
