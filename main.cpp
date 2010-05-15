@@ -3,6 +3,7 @@
 #include "image.h"
 #include "scene.h"
 #include "ray.h"
+#include "bih.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ int main( int argc, const char* argv[] )
     //Initialize scene    
     Image* image = new Image(500,300);
     Scene* scene = new Scene();
-    scene->addObject(targetObject);
+    scene->addObject(targetObject); //ownership of target object taken by scene
     scene->setCamera(Vec(15,10,5),Vec(-2,2.5,0),Vec(0,1,0),5,(3.1427/3.0f)); //eye,lookat,up,pnear,fovx    
     
     //Generate rays
@@ -27,15 +28,22 @@ int main( int argc, const char* argv[] )
     int rayCount = image->width() * image->height();
     for(int i=0; i<rayCount; i++)
     {
+        printf("%d ",i);
         rays[i].toConsole();
-    }
-    */
+    }*/
+    
     
     //Generate accel struc - bih
+    Bih* bih = new Bih();
+    bih->buildBIH(scene);
 
     //Ray trace
     
-    delete targetObject;
-    //delete[] rays;
+    
+    //Clean up
+    delete[] rays;
+    delete scene;
+    delete image;
+    delete bih;
 }
 

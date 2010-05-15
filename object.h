@@ -16,6 +16,7 @@ public:
 
     void addFace(Face* face);
     Face* getFace(int index);
+    vector<Face*>& getPrimitives();
 
     void addVertex(Vertex* vertex);
     Vertex* getVertex(int index);

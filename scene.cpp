@@ -19,15 +19,21 @@ void Scene::addObject(Object* object)
 
     if(m_objects.size()==1)
         m_boundingBox = m_objects[0]->boundingBox();
-    else
-    {
+    //else
         //TODO: multiple objects
-    }
 }
 
 Object* Scene::getObject(int index)
 {
     return m_objects[index];
+}
+
+vector<Face*>& Scene::getPrimitives()
+{
+    if(m_objects.size()==1)
+        return m_objects[0]->getPrimitives();
+    //else
+        //TODO: multiple objects
 }
 
 const Rect& Scene::boundingBox()

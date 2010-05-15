@@ -1,7 +1,7 @@
 # output file and main
 
-myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o
-	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o
+myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o
+	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o
 
 main.o: main.cpp
 	g++ -c main.cpp
@@ -31,6 +31,12 @@ image.o: image.cpp image.h
 
 ray.o: ray.cpp ray.h
 	g++ -c ray.cpp
+
+bihnode.o: bihnode.cpp bihnode.h
+	g++ -c bihnode.cpp
+
+bih.o: bih.cpp bih.h
+	g++ -c bih.cpp
 
 clean:
 	rm *.o ./bin/myBIH.out

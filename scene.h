@@ -17,6 +17,7 @@ public:
 
     void addObject(Object* object);
     Object* getObject(int index);
+    vector<Face*>& getPrimitives();
 
     const Rect& boundingBox();
     void setBoundingBox(const Rect& boundingBox);
