@@ -4,6 +4,7 @@
 #include "face.h"
 #include "vertex.h"
 #include "rect.h"
+#include "material.h"
 #include <vector>
 
 using namespace std;
@@ -24,12 +25,16 @@ public:
     const Rect& boundingBox();
     void setBoundingBox(const Rect& boundingBox);
 
+    void setMaterial(const Color& a, const Color& d, const Color& s, const double& shine, const double& reflect, const double& opacity, const double& refract_idx);
+    const Material& material() const;
+
     void toConsole();
 
 private:
     vector<Face*> m_faces;
     vector<Vertex*> m_vertices;
     Rect m_boundingBox;
+    Material m_material;
 
 };
 

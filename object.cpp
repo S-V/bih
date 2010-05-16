@@ -54,6 +54,11 @@ void Object::setBoundingBox(const Rect& boundingBox)
     m_boundingBox = boundingBox;
 }
 
+const Material& Object::material() const
+{
+    return m_material;
+}
+
 void Object::toConsole()
 {    
     printf( "-----------------------------------------------\n");

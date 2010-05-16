@@ -280,6 +280,60 @@ public:
         else return -1.0;
     }
 
+    static Color shadeLocal(const Vec& origin, const Ray* ray, const Vec& normal, const Face* polygon, const double& parameter, const Scene* scene)
+    {
+	    //point of intersection
+	    Vec p = origin + ((ray->direction())*(float)parameter);
+
+	    //result color components
+	    double r=0,g=0,b=0; 
+
+	    //normalized vector from p to viewer (normalize opposite ray direction)
+	    Vec v = (ray->direction())*-1.0;
+	    v = !v;
+	
+	    //get material
+	    const Material& l_material = scene->getObject(0)->material();
+
+	    //for each light
+	    //for(unsigned int i=0; i<lights.size(); i++)
+	    {
+		    //normalized vector from p to light source
+		    Vec l = scene->light().m_position - p;
+		    l = !l;
+
+		    //normalized vector of reflected light at p
+		    Vec rVec = (normal * 2.0 * (normal*l))-l;
+
+		    {
+			    double specularFactor = pow((double)(rVec*v),l_material.shine);
+			    double diffuseFactor = (l*normal);
+			    if(diffuseFactor<0.0)
+			    {
+				    r=l_material.Ka[0] * scene->light().m_color[0];
+				    g=l_material.Ka[1] * scene->light().m_color[1];
+				    b=l_material.Ka[2] * scene->light().m_color[2];
+			    }
+                else
+                {
+			        r = (l_material.Ka[0]  * scene->light().m_color[0] + //ambient
+						        l_material.Kd[0]  * diffuseFactor * scene->light().m_color[0] + //diffuse
+						        l_material.Ks[0]  * specularFactor * scene->light().m_color[0]); //specular
+
+			        g = (l_material.Ka[1]  * scene->light().m_color[1] + //ambient
+				        l_material.Kd[1]  * diffuseFactor * scene->light().m_color[1] + //diffuse
+				        l_material.Ks[1]  * specularFactor * scene->light().m_color[1]); //specular
+
+			        b = (l_material.Ka[2]  * scene->light().m_color[2] + //ambient
+				        l_material.Kd[2]  * diffuseFactor * scene->light().m_color[2] + //diffuse
+				        l_material.Ks[2]  * specularFactor * scene->light().m_color[2]); //specular
+                }
+		    }
+	    }
+
+	    return Color((float)r,(float)g,(float)b);
+    }
+
 	static Color rayCast(const Ray* ray, const Scene* scene, const BihNode* tree)
 	{
         Color l_color(0,0,0);
@@ -418,7 +472,7 @@ public:
 			    //lights - scene
 			    //Reflection/Refraction ray generation
 
-		    //l_color = shadeLocal(ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene,reflectedRay,refractedRay);
+		    l_color = shadeLocal(scene->getEye(),ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene);
 	    }
       
         return l_color;

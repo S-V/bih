@@ -5,6 +5,7 @@
 #include "vertex.h"
 #include "rect.h"
 #include "object.h"
+#include "light.h"
 #include <vector>
 
 using namespace std;
@@ -17,6 +18,7 @@ public:
 
     void addObject(Object* object);
     Object* getObject(int index);
+    const Object* getObject(int index) const;
     vector<Face*>& getPrimitives();
 
     Rect& boundingBox();
@@ -29,6 +31,9 @@ public:
     const Vec& getUp() const;
     const double& getNear() const;
     const double& getFovx() const; 
+
+    void setLight(const Color& color, const Vec& position);
+    const Light& light() const;
 
 private:
     //objects
@@ -44,6 +49,8 @@ private:
     //bounding box
     Rect m_boundingBox;
 
+    //light
+    Light m_light;
 };
 
 #endif
