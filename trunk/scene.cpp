@@ -28,6 +28,11 @@ Object* Scene::getObject(int index)
     return m_objects[index];
 }
 
+const Object* Scene::getObject(int index) const
+{
+    return m_objects[index];
+}
+
 vector<Face*>& Scene::getPrimitives()
 {
     if(m_objects.size()==1)
@@ -84,4 +89,15 @@ const double& Scene::getNear() const
 const double& Scene::getFovx() const
 {
     return m_fovx;
-} 
+}
+
+void Scene::setLight(const Color& color, const Vec& position)
+{
+    m_light.m_color = color;
+    m_light.m_position = position;
+}
+
+const Light& Scene::light() const
+{
+    return m_light;
+}
