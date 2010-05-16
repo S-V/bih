@@ -57,9 +57,9 @@ int main( int argc, const char* argv[] )
     RayTracer::rayTrace(scene,image,bih->tree(),rays);
     
     //Clean up
-    delete[] rays;
-    delete scene;
-    delete image;
-    delete bih;
+    //delete[] rays;
+    //delete scene;
+    //delete image;
+    //delete bih;
 }
 
