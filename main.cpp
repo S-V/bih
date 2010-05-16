@@ -14,6 +14,7 @@ int main( int argc, const char* argv[] )
     //Load mesh from file
     Object* targetObject = new Object();
     MLoader::loadM("/home/yzong/Dissertation/Models/models/lion.m",targetObject);
+	//MLoader::loadM("C:\\models\\lion.m",targetObject);
     //targetObject->toConsole();
 
     //Initialize scene    
