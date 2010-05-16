@@ -15,13 +15,22 @@ public:
 	    //int ray_counter = 0;
         int ray_count   = image->width() * image->height();
         
-        for(int ray_counter=0;ray_counter<34172;ray_counter++) //on ray 34173 - memory error
+        //on ray 34173 - memory error
+        image->setPixel(34172 / image->height(),
+                            34172 % image->height(),
+                            RayTracer::rayCast(&(rays[34172]), scene, tree) 
+                            );
+
+        /*
+        for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
 		{
             image->setPixel(ray_counter / image->height(),
                             ray_counter % image->height(),
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
-        }
+        }*/
+
+        
 	}
 
     static bool intersectRayAABB(const Vec& origin, const Ray* ray, const Vec& min, const Vec& max, float& t_near, float& t_far)
