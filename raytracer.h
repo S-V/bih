@@ -12,16 +12,14 @@ class RayTracer
 public:
     static void rayTrace(const Scene* scene, Image* image, const BihNode* tree, const Ray* rays)
     {
-	    int ray_counter = 0;
+	    //int ray_counter = 0;
         int ray_count   = image->width() * image->height();
-
-        for(;ray_counter<=ray_count;)
+        
+        for(int ray_counter=0;ray_counter<34172;ray_counter++) //on ray 34173 - memory error
 		{
-			ray_counter++;
-
             image->setPixel(ray_counter / image->height(),
                             ray_counter % image->height(),
-                            RayTracer::rayCast(&(rays[ray_counter-1]), scene, tree) 
+                            RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
         }
 	}
@@ -418,43 +416,49 @@ public:
 	                //	- use split axis and L/R split values, push into call/min/max stack
 	                //	Left child
 		                //mvBIHNode* leftChild = childrenNode[0];
-		                nodeStack.push_back(currentNode->m_leftChild);
-		                //set new max value
-		                Vec newMax;
-		                switch(split_axis)
-		                {
-		                case 0:
-			                newMax = Vec(*(currentNode->m_leftValue),currentMax[1],currentMax[2]);
-			                break;
-		                case 1:
-			                newMax = Vec(currentMax[0],*(currentNode->m_leftValue),currentMax[2]);
-			                break;
-		                case 2:
-			                newMax = Vec(currentMax[0],currentMax[1],*(currentNode->m_leftValue));
-			                break;
-		                }
-		                minStack.push_back(currentMin);
-		                maxStack.push_back(newMax);
 
+                        if(currentNode->m_leftChild != 0)
+                        {
+		                    nodeStack.push_back(currentNode->m_leftChild);
+		                    //set new max value
+		                    Vec newMax;
+		                    switch(split_axis)
+		                    {
+		                    case 0:
+			                    newMax = Vec(*(currentNode->m_leftValue),currentMax[1],currentMax[2]);
+			                    break;
+		                    case 1:
+			                    newMax = Vec(currentMax[0],*(currentNode->m_leftValue),currentMax[2]);
+			                    break;
+		                    case 2:
+			                    newMax = Vec(currentMax[0],currentMax[1],*(currentNode->m_leftValue));
+			                    break;
+		                    }
+		                    minStack.push_back(currentMin);
+		                    maxStack.push_back(newMax);
+                        }
 	                //	Right child
-		                nodeStack.push_back(currentNode->m_rightChild);
+                        if(currentNode->m_rightChild != 0)
+                        {
+		                    nodeStack.push_back(currentNode->m_rightChild);
 
-		                //set new min value
-		                Vec newMin;
-		                switch(split_axis)
-		                {
-		                case 0:
-			                newMin = Vec(*(currentNode->m_rightValue),currentMin[1],currentMin[2]);
-			                break;
-		                case 1:
-			                newMin = Vec(currentMin[0],*(currentNode->m_rightValue),currentMin[2]);
-			                break;
-		                case 2:
-			                newMin = Vec(currentMin[0],currentMin[1],*(currentNode->m_rightValue));
-			                break;
-		                }
-		                minStack.push_back(newMin);
-		                maxStack.push_back(currentMax);
+		                    //set new min value
+		                    Vec newMin;
+		                    switch(split_axis)
+		                    {
+		                    case 0:
+			                    newMin = Vec(*(currentNode->m_rightValue),currentMin[1],currentMin[2]);
+			                    break;
+		                    case 1:
+			                    newMin = Vec(currentMin[0],*(currentNode->m_rightValue),currentMin[2]);
+			                    break;
+		                    case 2:
+			                    newMin = Vec(currentMin[0],currentMin[1],*(currentNode->m_rightValue));
+			                    break;
+		                    }
+		                    minStack.push_back(newMin);
+		                    maxStack.push_back(currentMax);
+                        }
                 }
             }//end else if inner node
 
