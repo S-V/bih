@@ -4,6 +4,7 @@
 #include "scene.h"
 #include "ray.h"
 #include "bih.h"
+#include "raytracer.h"
 
 using namespace std;
 
@@ -39,7 +40,7 @@ int main( int argc, const char* argv[] )
     bih->buildBIH(scene);
 
     //Ray trace
-    
+    RayTracer::rayTrace(scene,image,bih->tree(),rays);
     
     //Clean up
     delete[] rays;

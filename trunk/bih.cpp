@@ -11,6 +11,11 @@ Bih::~Bih()
         delete m_tree;
 }
 
+const Bih::BihNode* tree()
+{
+	return m_tree;
+}
+
 void Bih::buildBIH(Scene* scene)
 {
     //obtain reference to scene and primitives
