@@ -259,10 +259,10 @@ void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& ma
         //	3. Set currentNode details
         //      a. Set m_leftValue and m_rightValue
         currentNode->m_leftValue = new float();
-        (*currentNode->m_leftValue) = split_max;
+        *(currentNode->m_leftValue) = split_max;
 
         currentNode->m_rightValue = new float();
-        (*currentNode->m_rightValue) = split_min;
+        *(currentNode->m_rightValue) = split_min;
 
         //      b. Create and Set pointer to children pair - m_leftChild and m_rightChild
         //         Calculate new bounding boxes and make recursive call
