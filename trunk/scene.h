@@ -19,7 +19,8 @@ public:
     Object* getObject(int index);
     vector<Face*>& getPrimitives();
 
-    const Rect& boundingBox();
+    Rect& boundingBox();
+    const Rect& boundingBox() const;
     void setBoundingBox(const Rect& boundingBox);
 
     void setCamera(const Vec& eye, const Vec& lookat, const Vec& up, const double& near, const double& fovx);

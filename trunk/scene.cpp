@@ -36,7 +36,12 @@ vector<Face*>& Scene::getPrimitives()
         //TODO: multiple objects
 }
 
-const Rect& Scene::boundingBox()
+Rect& Scene::boundingBox()
+{
+    return m_boundingBox;
+}
+
+const Rect& Scene::boundingBox() const
 {
     return m_boundingBox;
 }

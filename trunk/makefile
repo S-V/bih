@@ -1,7 +1,7 @@
 # output file and main
 
-myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o
-	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o
+myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o color.o
+	g++ -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o color.o
 
 main.o: main.cpp
 	g++ -c main.cpp
@@ -37,6 +37,9 @@ bihnode.o: bihnode.cpp bihnode.h
 
 bih.o: bih.cpp bih.h
 	g++ -c bih.cpp
+
+color.o: color.cpp color.h
+	g++ -c color.cpp
 
 clean:
 	rm *.o ./bin/myBIH.out
