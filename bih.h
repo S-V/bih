@@ -21,6 +21,9 @@ public:
     void toConsole();
 
 private:
+    void setLeafNode(BihNode* currentNode, Face* primitive, const int& primitiveCount);
+
+private:
     vector<Face*>* m_primitives; //pointer owned by class Object (if multiple objects, ownership belongs to class Scene)
     BihNode* m_tree;            
 };
