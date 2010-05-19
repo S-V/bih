@@ -27,7 +27,7 @@ int main( int argc, const char* argv[] )
     double shi = 2.0;
     targetObject->setMaterial(l_aColor, l_dColor, l_sColor, shi, ref, opa, idx);
 	//MLoader::loadM("C:\\models\\lion.m",targetObject);
-    //targetObject->toConsole();
+    targetObject->toConsole();
 
     //Initialize scene    
     Image* image = new Image(500,300);
