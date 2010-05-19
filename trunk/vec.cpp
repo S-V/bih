@@ -14,9 +14,18 @@ Vec::Vec(const float& xx, const float& yy, const float& zz)
     m_val[2] = zz;
 }
 
+Vec::Vec(const Vec& another)
+{
+    m_val = new float[3];
+    m_val[0] = another.m_val[0];
+    m_val[1] = another.m_val[1];
+    m_val[2] = another.m_val[2];
+}
+
 Vec::~Vec()
 {
-    delete[] m_val;
+    if(m_val)
+        delete[] m_val;
 }
 
 const float& Vec::x()

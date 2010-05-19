@@ -6,6 +6,7 @@ class Vec
 public:
     Vec();
     Vec(const float& xx, const float& yy, const float& zz);
+    Vec(const Vec& another);
     virtual ~Vec();
 
     const float& x();

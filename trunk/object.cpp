@@ -86,5 +86,18 @@ void Object::toConsole()
         printf("       normal:   %f %f %f \n\n",m_vertices[i]->normal()[0],m_vertices[i]->normal()[1],m_vertices[i]->normal()[2]);
     }
 
+    for(int i=0; i<m_faces.size(); i++)
+    {
+        if(i==9996)
+            int x=0;
+
+        printf("    Face %d: \n", i);
+        printf("        V1 position: %f %f %f \n",m_faces[i]->getVertex(0)->position()[0],m_faces[i]->getVertex(0)->position()[1],m_faces[i]->getVertex(0)->position()[2]);
+        printf("        V1 normal:   %f %f %f \n\n",m_faces[i]->getVertex(0)->normal()[0],m_faces[i]->getVertex(0)->normal()[1],m_faces[i]->getVertex(0)->normal()[2]);
+        printf("        V2 position: %f %f %f \n",m_faces[i]->getVertex(1)->position()[0],m_faces[i]->getVertex(1)->position()[1],m_faces[i]->getVertex(1)->position()[2]);
+        printf("        V2 normal:   %f %f %f \n\n",m_faces[i]->getVertex(1)->normal()[0],m_faces[i]->getVertex(1)->normal()[1],m_faces[i]->getVertex(1)->normal()[2]);
+        printf("        V3 position: %f %f %f \n",m_faces[i]->getVertex(2)->position()[0],m_faces[i]->getVertex(2)->position()[1],m_faces[i]->getVertex(2)->position()[2]);
+        printf("        V3 normal:   %f %f %f \n\n",m_faces[i]->getVertex(2)->normal()[0],m_faces[i]->getVertex(2)->normal()[1],m_faces[i]->getVertex(2)->normal()[2]);
+    }
 }
 
