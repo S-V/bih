@@ -8,6 +8,13 @@ OBJS = main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnod
 MODEL = s
 CC = g++
 
+# include directories
+INCLUDES = -I./include
+
+# library paths
+LIBS = -L./lib -L/usr/lib -lFreeImage
+
+
 # Compiler-dependent section
 #
 #%if $(CC) == g++
@@ -22,7 +29,7 @@ CC = g++
 # The project to be built
 #
 $(PROJ).out : $(OBJS)
-	$(CC) -g -o ./bin/myBIH.out $(OBJS) -I.\include -L.\lib -lFreeImage
+	$(CC) $(INCLUDES) -g -o ./bin/myBIH.out $(OBJS) $(LIBS)
 
 main.o: main.cpp
 	$(CC) -g -c main.cpp
@@ -48,7 +55,7 @@ scene.o: scene.cpp scene.h
 	$(CC) -g -c scene.cpp
 
 image.o: image.cpp image.h
-	$(CC) -g -c image.cpp
+	$(CC) $(INCLUDES) -g -c image.cpp $(OBJS) $(LIBS)
 
 ray.o: ray.cpp ray.h
 	$(CC) -g -c ray.cpp
