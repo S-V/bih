@@ -29,8 +29,8 @@ public:
 
         for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
 		{
-            image->setPixel(ray_counter / image->height(),
-                            ray_counter % image->height(),
+            image->setPixel(ray_counter % image->width(),
+                            ray_counter / image->width(),
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
         }

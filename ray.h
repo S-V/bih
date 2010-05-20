@@ -32,15 +32,15 @@ public:
         //printf("here2");
         
 	    // Trace a ray through every pixel
-	    for (int i=0; i<image->width(); i++) {
+	    for (int i=0; i<image->height(); i++) {
 
-		    for (int j=0; j<image->height(); j++) {
+		    for (int j=0; j<image->width(); j++) {
 
 			    // Find position of pixel in world coordinates
 			    Vec worldPix = scene.getEye() 
 				      + view * (float)(scene.getNear())
-				      + u*( (i-(image->width()/2.0f))*(float)pixelWidth )
-				      + v*( (j-(image->height()/2.0f))*(float)pixelWidth );
+				      + u*( (j-(image->width()/2.0f))*(float)pixelWidth )
+				      + v*( (i-(image->height()/2.0f))*(float)pixelWidth );
 
 			    // Direction of ray (note: vector is not normalized)
 			    Vec direction = worldPix - scene.getEye();
@@ -48,7 +48,7 @@ public:
 			    direction = !direction; //normalize direction
 
 			    // Construct the ray
-                allRays[(j*image->width())+i].set(direction); 
+                allRays[(i*image->width())+j].set(direction); 
 		    }
 	    }
 
