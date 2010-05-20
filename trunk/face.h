@@ -13,6 +13,8 @@ class Face
 public:
     Face();
     ~Face();
+	
+	//Face(const Face& another);
 
     void addVertex(Vertex* vertex);
     Vertex* getVertex(const int& index);

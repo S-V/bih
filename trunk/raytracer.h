@@ -15,31 +15,25 @@ public:
 	    //int ray_counter = 0;
         int ray_count   = image->width() * image->height();
         
-        //on ray 34173 - memory error - resolved - error due to missing copy constructor in Vec class, resulting in uninitialized pointers
+        //on ray 34172 - memory error - resolved - error due to missing copy constructor in Vec class, resulting in uninitialized pointers
         /*image->setPixel(34172 / image->height(),
                             34172 % image->height(),
                             RayTracer::rayCast(&(rays[34172]), scene, tree) 
                             );*/
 
-        image->setPixel(38747 / image->height(),
+		//on ray 38747 - memory error - cannot access multiple faces in a single leaf node
+        /*image->setPixel(38747 / image->height(),
                             38747 % image->height(),
                             RayTracer::rayCast(&(rays[38747]), scene, tree) 
-                            );
+                            );*/
 
-        /*for(int ray_counter=0;ray_counter < 38748;ray_counter++) 
+        for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
 		{
             image->setPixel(ray_counter / image->height(),
                             ray_counter % image->height(),
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
-        }*/
-        /*for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
-		{
-            image->setPixel(ray_counter / image->height(),
-                            ray_counter % image->height(),
-                            RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
-                            );
-        }*/
+        }
 
         
 	}
@@ -166,7 +160,7 @@ public:
     }
 
     static double intersectRayTriangle(const Vec& origin, const Ray* ray, Face* polygon, Vec& intersectionNormal)
-    {
+    {		
         //find normal N, of triangle polygon and a point on it (plane of triangle)
 	
         //distance D, along ray where ray intersects plane of triangle
@@ -378,7 +372,20 @@ public:
         {
 		    // d.	Pop next element in stack (node)
             const BihNode* currentNode = nodeStack.at(0);
-            nodeStack.erase(nodeStack.begin());
+			
+			/*
+			if(currentNode->m_isLeaf)
+			{
+				Face* currentPolygon = currentNode->m_primitive;
+				printf("        V1 position: %f %f %f \n",currentPolygon->getVertex(0)->position()[0],currentPolygon->getVertex(0)->position()[1],currentPolygon->getVertex(0)->position()[2]);
+				printf("        V1 normal:   %f %f %f \n\n",currentPolygon->getVertex(0)->normal()[0],currentPolygon->getVertex(0)->normal()[1],currentPolygon->getVertex(0)->normal()[2]);
+				printf("        V2 position: %f %f %f \n",currentPolygon->getVertex(1)->position()[0],currentPolygon->getVertex(1)->position()[1],currentPolygon->getVertex(1)->position()[2]);
+				printf("        V2 normal:   %f %f %f \n\n",currentPolygon->getVertex(1)->normal()[0],currentPolygon->getVertex(1)->normal()[1],currentPolygon->getVertex(1)->normal()[2]);
+				printf("        V3 position: %f %f %f \n",currentPolygon->getVertex(2)->position()[0],currentPolygon->getVertex(2)->position()[1],currentPolygon->getVertex(2)->position()[2]);
+				printf("        V3 normal:   %f %f %f \n\n",currentPolygon->getVertex(2)->normal()[0],currentPolygon->getVertex(2)->normal()[1],currentPolygon->getVertex(2)->normal()[2]);
+			}
+            */
+			nodeStack.erase(nodeStack.begin());
             
             //  get current node AABB min/max
             currentMin = minStack.at(0);
@@ -388,19 +395,19 @@ public:
 
             // ei.  If element is invalid node
             // Obsolete - was in un-optimized version
-
+			
             if(currentNode->m_isLeaf)
             {
                 // Get pointer to Face
                 Face* currentPolygon = currentNode->m_primitive;
 
                 // Loop through each face
-                for(int polyCount=0; polyCount < *(currentNode->m_axisOrPrimitiveCount); polyCount++)
+                //for(int polyCount=0; polyCount < *(currentNode->m_axisOrPrimitiveCount); polyCount++)
 			    {
                     //call to intersection test function, returns line intersection point
                     Vec intersectNormal;
                     double intersectPt = intersectRayTriangle(scene->getEye(), ray, currentPolygon, intersectNormal);
-
+					
                     //if line intersection point >= 0.0 && < lineIntersectMin,
                     if(intersectPt>=0.0)
                     {
@@ -413,7 +420,7 @@ public:
 		                    minIntersectNormal=intersectNormal;
 	                    }
                     }
-                    currentPolygon++; //go to next polygon in leave node
+                    //currentPolygon++; //go to next polygon in leave node
                 }
                 
             }//end if node isLeaf

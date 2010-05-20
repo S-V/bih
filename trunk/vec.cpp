@@ -3,12 +3,15 @@
 
 Vec::Vec()
 {
-    m_val = new float[3];
+    //m_val = new float[3];
+    m_val[0] = 0;
+    m_val[1] = 0;
+    m_val[2] = 0;
 }
 
 Vec::Vec(const float& xx, const float& yy, const float& zz)
 {
-    m_val = new float[3];
+    //m_val = new float[3];
     m_val[0] = xx;
     m_val[1] = yy;
     m_val[2] = zz;
@@ -16,7 +19,7 @@ Vec::Vec(const float& xx, const float& yy, const float& zz)
 
 Vec::Vec(const Vec& another)
 {
-    m_val = new float[3];
+    //m_val = new float[3];
     m_val[0] = another.m_val[0];
     m_val[1] = another.m_val[1];
     m_val[2] = another.m_val[2];
@@ -24,8 +27,8 @@ Vec::Vec(const Vec& another)
 
 Vec::~Vec()
 {
-    if(m_val)
-        delete[] m_val;
+    //if(m_val)
+    //    delete[] m_val;
 }
 
 const float& Vec::x()
@@ -53,6 +56,8 @@ Vec& Vec::operator = (const Vec& another)
     m_val[0] = another.m_val[0];
     m_val[1] = another.m_val[1];
     m_val[2] = another.m_val[2];
+
+    return (*this);
 }
 
 float& Vec::operator [] (const int& index)

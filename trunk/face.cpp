@@ -10,6 +10,17 @@ Face::~Face()
 
 }
 
+/*Face::Face(const Face& another)
+{
+	for(int i=0; i<another.m_vertices.size(); ++i)
+	{
+		m_vertices.push_back(another.m_vertices[i]);
+	}
+	
+    m_boundingBox = another.m_boundingBox;;
+    m_normal = another.m_normal;
+}*/
+
 void Face::addVertex(Vertex* vertex)
 {
     m_vertices.push_back(vertex);

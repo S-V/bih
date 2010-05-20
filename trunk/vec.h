@@ -31,7 +31,7 @@ public:
     Vec operator & (const Vec& v) const;    // Element-wise multiplication
     
 private:
-    float* m_val;
+    float m_val[3];
 };
 
 #endif

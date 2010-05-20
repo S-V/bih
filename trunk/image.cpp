@@ -38,9 +38,9 @@ void Image::setPixel(const int& x, const int& y, const unsigned char& r, const u
 void Image::setPixel(const int& x, const int& y, const Color& color)
 {
     int k = 3*(m_width*y+x);
-    m_rgb[k]   = color[0]*255.0f;
-    m_rgb[k+1] = color[1]*255.0f;
-    m_rgb[k+2] = color[2]*255.0f;
+    m_rgb[k]   = (unsigned char)(color[0]*255.0f);
+    m_rgb[k+1] = (unsigned char)(color[1]*255.0f);
+    m_rgb[k+2] = (unsigned char)(color[2]*255.0f);
 }
 
 unsigned char* Image::getPixel(const int& index)

@@ -24,6 +24,8 @@ Vertex& Vertex::operator = (const Vertex& another)
 {
     m_position = another.m_position;
     m_normal = another.m_normal;
+
+    return (*this);
 }
 
 

@@ -41,5 +41,8 @@ Rect& Rect::operator= (const Rect& another)
 {
     m_min = another.m_min;
     m_max = another.m_max;
+
+    return *this;
 }
+
 

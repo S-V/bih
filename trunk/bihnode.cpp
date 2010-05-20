@@ -1,6 +1,8 @@
 #include "bihnode.h"
 
-BihNode::BihNode():m_leftValue(0),
+BihNode::BihNode():
+    m_isLeaf(false),
+    m_leftValue(0),
     m_rightValue(0),
     m_leftChild(0),
     m_rightChild(0),
@@ -9,6 +11,17 @@ BihNode::BihNode():m_leftValue(0),
 {
 
 }
+
+/*BihNode::BihNode(const BihNode& another)
+{
+	m_isLeaf = another.m_isLeaf;
+    m_leftValue = another.m_leftValue;
+    m_rightValue = another.m_rightValue;
+    m_leftChild = another.m_leftChild;    
+    m_rightChild = another.m_rightChild;
+    m_axisOrPrimitiveCount = another.m_axisOrPrimitiveCount;
+    m_primitive = another.m_primitive;         
+}*/
 
 BihNode::~BihNode()
 {
