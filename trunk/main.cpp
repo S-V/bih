@@ -16,8 +16,8 @@ int main( int argc, const char* argv[] )
 
     //Load mesh from file
     Object* targetObject = new Object();
-    //MLoader::loadM("/home/yzong/Dissertation/Models/models/lion.m",targetObject);
-    MLoader::loadM("C:\\models\\lion.m",targetObject);
+    MLoader::loadM("/home/yzong/Dissertation/Models/models/lion.m",targetObject);
+    //MLoader::loadM("C:\\models\\lion.m",targetObject);
 	
     Color l_aColor(.2f,.2f,.2f);
     Color l_dColor(.6f,.6f,.6f);
@@ -56,6 +56,9 @@ int main( int argc, const char* argv[] )
 
     //Ray trace
     RayTracer::rayTrace(scene,image,bih->tree(),rays);
+
+    //Export image result
+    image->exportImage("result.jpg");
     
     //Clean up
     //delete[] rays;
