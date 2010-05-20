@@ -37,6 +37,8 @@ Ray& Ray::operator = (const Ray& another)
 {
     //m_position = another.m_position;
     m_direction = another.m_direction;
+
+    return *this;
 }
 
 void Ray::set(/*const Vec& position, */const Vec& direction)

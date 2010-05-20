@@ -13,6 +13,7 @@ class BihNode
 public:
     BihNode();
     virtual ~BihNode();
+	//BihNode(const BihNode& another);
 
 //TODO: make member variables private
     bool m_isLeaf;

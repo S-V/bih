@@ -16,8 +16,9 @@ int main( int argc, const char* argv[] )
 
     //Load mesh from file
     Object* targetObject = new Object();
-    MLoader::loadM("/home/yzong/Dissertation/Models/models/lion.m",targetObject);
-    
+    //MLoader::loadM("/home/yzong/Dissertation/Models/models/lion.m",targetObject);
+    MLoader::loadM("C:\\models\\lion.m",targetObject);
+	
     Color l_aColor(.2f,.2f,.2f);
     Color l_dColor(.6f,.6f,.6f);
     Color l_sColor(.2f,.2f,.2f);
@@ -26,8 +27,8 @@ int main( int argc, const char* argv[] )
     double idx = 1.5;
     double shi = 2.0;
     targetObject->setMaterial(l_aColor, l_dColor, l_sColor, shi, ref, opa, idx);
-	//MLoader::loadM("C:\\models\\lion.m",targetObject);
-    targetObject->toConsole();
+	
+    //targetObject->toConsole();
 
     //Initialize scene    
     Image* image = new Image(500,300);
