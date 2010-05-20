@@ -1,45 +1,66 @@
-# output file and main
+# This makefile compiles the project listed in the PROJ macro
+#
+PROJ = myBIH
+OBJS = main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o color.o 
 
-myBIH.out : main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o color.o
-	g++ -g -o ./bin/myBIH.out main.o vec.o vertex.o rect.o face.o object.o scene.o image.o ray.o bihnode.o bih.o color.o
+# Configuration:
+#
+MODEL = s
+CC = g++
+
+# Compiler-dependent section
+#
+#%if $(CC) == g++
+  #CFLAGS = –m$(MODEL)		# $(CFLAGS) is –ms
+  #LDSTART = c0$(MODEL)		# the start-up object file
+  #LDLIBS = c$(MODEL)		# the library
+  #LDFLAGS = /Lf:\bc\lib		# f:\bc\lib is library directory
+#%else				# else
+#% abort Unsupported CC==$(CC)	# compiler is not supported
+#%endif				# endif 
+
+# The project to be built
+#
+$(PROJ).out : $(OBJS)
+	$(CC) -g -o ./bin/myBIH.out $(OBJS) -I.\include -L.\lib -lFreeImage
 
 main.o: main.cpp
-	g++ -g -c main.cpp
+	$(CC) -g -c main.cpp
 
 #classes
 
 vec.o: vec.cpp vec.h
-	g++ -g -c vec.cpp
+	$(CC) -g -c vec.cpp
 
 vertex.o: vertex.cpp vertex.h
-	g++ -g -c vertex.cpp
+	$(CC) -g -c vertex.cpp
 
 rect.o: rect.cpp rect.h
-	g++ -g -c rect.cpp
+	$(CC) -g -c rect.cpp
 
 face.o: face.cpp face.h
-	g++ -g -c face.cpp
+	$(CC) -g -c face.cpp
 
 object.o: object.cpp object.h
-	g++ -g -c object.cpp
+	$(CC) -g -c object.cpp
 
 scene.o: scene.cpp scene.h
-	g++ -g -c scene.cpp
+	$(CC) -g -c scene.cpp
 
 image.o: image.cpp image.h
-	g++ -g -c image.cpp
+	$(CC) -g -c image.cpp
 
 ray.o: ray.cpp ray.h
-	g++ -g -c ray.cpp
+	$(CC) -g -c ray.cpp
 
 bihnode.o: bihnode.cpp bihnode.h
-	g++ -g -c bihnode.cpp
+	$(CC) -g -c bihnode.cpp
 
 bih.o: bih.cpp bih.h
-	g++ -g -c bih.cpp
+	$(CC) -g -c bih.cpp
 
 color.o: color.cpp color.h
-	g++ -g -c color.cpp
+	$(CC) -g -c color.cpp
 
 clean:
 	rm *.o ./bin/myBIH.out
