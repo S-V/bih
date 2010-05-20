@@ -9,27 +9,15 @@ MODEL = s
 CC = g++
 
 # include directories
-INCLUDES = -I./include
+INCLUDES = -I/usr/include
 
 # library paths
-LIBS = -L./lib -L/usr/lib -lFreeImage
-
-
-# Compiler-dependent section
-#
-#%if $(CC) == g++
-  #CFLAGS = –m$(MODEL)		# $(CFLAGS) is –ms
-  #LDSTART = c0$(MODEL)		# the start-up object file
-  #LDLIBS = c$(MODEL)		# the library
-  #LDFLAGS = /Lf:\bc\lib		# f:\bc\lib is library directory
-#%else				# else
-#% abort Unsupported CC==$(CC)	# compiler is not supported
-#%endif				# endif 
+LIBS = -L/usr/lib -lfreeimage
 
 # The project to be built
 #
 $(PROJ).out : $(OBJS)
-	$(CC) $(INCLUDES) -g -o ./bin/myBIH.out $(OBJS) $(LIBS)
+	$(CC) $(INCLUDES) -g -w -o ./bin/myBIH.out $(OBJS) $(LIBS)
 
 main.o: main.cpp
 	$(CC) -g -c main.cpp
@@ -55,7 +43,7 @@ scene.o: scene.cpp scene.h
 	$(CC) -g -c scene.cpp
 
 image.o: image.cpp image.h
-	$(CC) $(INCLUDES) -g -c image.cpp $(OBJS) $(LIBS)
+	$(CC) -w -g -c image.cpp
 
 ray.o: ray.cpp ray.h
 	$(CC) -g -c ray.cpp
@@ -70,5 +58,5 @@ color.o: color.cpp color.h
 	$(CC) -g -c color.cpp
 
 clean:
-	rm *.o ./bin/myBIH.out
+	rm *.o ./bin/myBIH.out *.jpg
 
