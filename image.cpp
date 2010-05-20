@@ -1,4 +1,5 @@
 #include "image.h"
+#include "./include/FreeImage.h"
 
 Image::Image(const int& w, const int& h): m_width(w),m_height(h)
 {
@@ -46,5 +47,12 @@ void Image::setPixel(const int& x, const int& y, const Color& color)
 unsigned char* Image::getPixel(const int& index)
 {
     return &(m_rgb[index]);
+}
+
+void Image::exportImage(const char* fileName)
+{
+    FIBITMAP* tmpImage = FreeImage_ConvertFromRawBits(m_rgb, width, height, 3*width, 24, FI_RGB_RED_MASK, FI_RGB_GREEN_MASK, FI_RGB_BLUE_MASK, false);
+	FREE_IMAGE_FORMAT fif = FreeImage_GetFIFFromFilename(fileName);
+	FreeImage_Save(fif,tmpImage,fileName);
 }
 

@@ -22,6 +22,8 @@ public:
     void setPixel(const int& x, const int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b);
     void setPixel(const int& x, const int& y, const Color& color);
     unsigned char* getPixel(const int& index);
+	
+	void exportImage(const char* fileName);
 
 private:
     int m_width;
