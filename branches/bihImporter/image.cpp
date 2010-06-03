@@ -1,6 +1,11 @@
 #include "image.h"
 #include "FreeImage.h"
 
+//For writing to serialize file
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 Image::Image(const int& w, const int& h): m_width(w),m_height(h)
 {
     m_rgb = new unsigned char[w*h*3];
@@ -47,6 +52,13 @@ void Image::setPixel(const int& x, const int& y, const Color& color)
 unsigned char* Image::getPixel(const int& index)
 {
     return &(m_rgb[index]);
+}
+
+void Image::importImage()
+{
+    ifstream myFile ("/home/yzong/bihCell/bin/result.bin", ios::in | ios::binary);
+    myFile.read ((char*)m_rgb, (3*m_width*m_height));
+    myFile.close();
 }
 
 void Image::exportImage(const char* fileName)
