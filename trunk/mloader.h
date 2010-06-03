@@ -29,13 +29,20 @@ public:
 	    // open file
 	    pFile = fopen(filename, "r" );
         
+	    int vertexCount=0;
+	    int faceCount=0;
+	    
 	    // load vectors
-	    while((type=fgetc(pFile)) != EOF)
+	    //while((type=fgetc(pFile)) != EOF)
+	    //while((vertexCount!=5000) && (faceCount!= 9996))
+	    while ((type=fgetc(pFile)) != '\377')
         {
 		    switch(type){
 			    case 'V':
 				    if(fscanf(pFile,"ertex %d %f %f %f {normal=(%f %f %f)}\n", &vertex_id, &x, &y, &z, &nx, &ny, &nz)==7)
 				    {
+				    	printf("%d\n",vertex_id);
+				    	
                         Vec l_normal(nx,ny,nz);
 					    Vertex* l_vertex = new Vertex(x,y,z,l_normal);		
 					
@@ -51,10 +58,13 @@ public:
 					    if(z>maximum->z()){(*maximum)[2]=z;}
 					
 				    }
+				    vertexCount++;
 				    break;
 			    case 'F':
 				    if(fscanf(pFile,"ace %d %d %d %d\n", &face_id, &v1, &v2, &v3)==4)
                     {
+				    	printf("%d\n",face_id);
+				    	
 					    Face* l_face = new Face();
 
                         //vertex data
@@ -116,11 +126,14 @@ public:
                         
 					    object->addFace(l_face);
 				    }
+				    faceCount++;
 				    break;
 			    default:
-				    do{
+				    /*do{
 					    type=fgetc(pFile);
-				    }while(type != EOF && type != '\n');
+				    }while((vertexCount!=5000)&&(faceCount!=9996)&&(type != '\n'));
+				    //while(type != EOF && type != '\n');
+				    */
 				    break;
 		    }//end switch
 	    }//end while

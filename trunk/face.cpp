@@ -28,7 +28,7 @@ void Face::addVertex(Vertex* vertex)
 
 Vertex* Face::getVertex(const int& index)
 {
-    if((index < 0)||(index > m_vertices.size()-1))
+    if((index < 0)||(index > (int)(m_vertices.size()-1)))
         return 0;
     
     return m_vertices[index];
