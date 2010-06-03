@@ -33,6 +33,7 @@ public:
                             ray_counter / image->width(),
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
+            printf("Ray %d traced\n",ray_counter);
         }
 
         
@@ -196,9 +197,9 @@ public:
             {return distance;} 
 
         Vec ray_minus_polyv1 = ray_origin-polygon_v1;
-        double polyNormalTimeAbove = (polygon->normal())*ray_minus_polyv1;
+        //double polyNormalTimeAbove = (polygon->normal())*ray_minus_polyv1;
 
-        double rayTimesPolyNormal = (ray->direction()) * (polygon->normal());
+        //double rayTimesPolyNormal = (ray->direction()) * (polygon->normal());
 
         //Substitute D into parametric equation of ray to find point P, where ray intersects plane
         Vec intersect_pt = ray_origin + ((ray->direction())*(float)distance);
@@ -292,7 +293,7 @@ public:
         else return -1.0;
     }
 
-    static Color shadeLocal(const Vec& origin, const Ray* ray, const Vec& normal, const Face* polygon, const double& parameter, const Scene* scene)
+    static Color shadeLocal(const Vec& origin, const Ray* ray, const Vec& normal, const Face* /*polygon*/, const double& parameter, const Scene* scene)
     {
 	    //point of intersection
 	    Vec p = origin + ((ray->direction())*(float)parameter);

@@ -8,12 +8,12 @@ Object::Object()
 
 Object::~Object()
 {
-    for(int i=0; i<m_faces.size(); i++)
+    for(int i=0; i<(int)(m_faces.size()); i++)
     {
         delete m_faces[i];
     }
 
-    for(int j=0; j<m_vertices.size(); j++)
+    for(int j=0; j<(int)(m_vertices.size()); j++)
     {
         delete m_vertices[j];
     }
@@ -79,17 +79,17 @@ void Object::toConsole()
     printf( "   Min: %f %f %f \n",m_boundingBox.min()[0],m_boundingBox.min()[1],m_boundingBox.min()[2]);
     printf( "   Max: %f %f %f \n\n",m_boundingBox.max()[0],m_boundingBox.max()[1],m_boundingBox.max()[2]);
 
-    for(int i=0; i<m_vertices.size(); i++)
+    for(int i=0; i<(int)(m_vertices.size()); i++)
     {
         printf("    Vertex %d: \n", i);
         printf("       position: %f %f %f \n",m_vertices[i]->position()[0],m_vertices[i]->position()[1],m_vertices[i]->position()[2]);
         printf("       normal:   %f %f %f \n\n",m_vertices[i]->normal()[0],m_vertices[i]->normal()[1],m_vertices[i]->normal()[2]);
     }
 
-    for(int i=0; i<m_faces.size(); i++)
+    for(int i=0; i<(int)(m_faces.size()); i++)
     {
-        if(i==9996)
-            int x=0;
+        //if(i==9996)
+        //    int x=0;
 
         printf("    Face %d: \n", i);
         printf("        V1 position: %f %f %f \n",m_faces[i]->getVertex(0)->position()[0],m_faces[i]->getVertex(0)->position()[1],m_faces[i]->getVertex(0)->position()[2]);

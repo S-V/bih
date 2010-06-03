@@ -43,6 +43,7 @@ void Bih::setLeafNode(BihNode* currentNode, Face* primitive, const int& primitiv
 
 void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& maxIndex, const Vec& min, const Vec& max)
 {
+	printf("BIH construct: min %d max %d\n",minIndex, maxIndex);
     // Determine if leaf or inner node
     //A. Leaf Node case: 
     if(minIndex==maxIndex)
