@@ -56,7 +56,7 @@ unsigned char* Image::getPixel(const int& index)
 
 void Image::importImage()
 {
-    ifstream myFile ("/home/yzong/bihCell/bin/result.bin", ios::in | ios::binary);
+    ifstream myFile ("/opt/CellTracerWorkspace/bihCell/bin/result.bin", ios::in | ios::binary);
     myFile.read ((char*)m_rgb, (3*m_width*m_height));
     myFile.close();
 }
