@@ -41,7 +41,7 @@ public:
 			    case 'V':
 				    if(fscanf(pFile,"ertex %d %f %f %f {normal=(%f %f %f)}\n", &vertex_id, &x, &y, &z, &nx, &ny, &nz)==7)
 				    {
-				    	printf("%d\n",vertex_id);
+				    	//printf("%d\n",vertex_id);
 				    	
                         Vec l_normal(nx,ny,nz);
 					    Vertex* l_vertex = new Vertex(x,y,z,l_normal);		
@@ -63,7 +63,7 @@ public:
 			    case 'F':
 				    if(fscanf(pFile,"ace %d %d %d %d\n", &face_id, &v1, &v2, &v3)==4)
                     {
-				    	printf("%d\n",face_id);
+				    	//printf("%d\n",face_id);
 				    	
 					    Face* l_face = new Face();
 

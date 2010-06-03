@@ -15,7 +15,7 @@ class Ray
 public:
     static Ray* generateRays(const Scene& scene, Image* image)
     {
-        printf("\n\nGenerate Rays\n\n");
+        //printf("\n\nGenerate Rays\n\n");
         
         int rayCount = image->width() * image->height();
         Ray* allRays = new Ray[rayCount];
@@ -51,7 +51,7 @@ public:
 			    // Construct the ray
                 allRays[(i*image->width())+j].set(direction); 
                 
-                printf("Ray %d created.\n",i*image->width()+j);
+                //printf("Ray %d created.\n",i*image->width()+j);
 		    }
 	    }
 

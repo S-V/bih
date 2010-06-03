@@ -33,7 +33,7 @@ public:
                             ray_counter / image->width(),
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
-            printf("Ray %d traced\n",ray_counter);
+            //printf("Ray %d traced\n",ray_counter);
         }
 
         
