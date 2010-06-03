@@ -23,6 +23,7 @@ public:
     void setPixel(const int& x, const int& y, const Color& color);
     unsigned char* getPixel(const int& index);
 	
+    void importImage();
 	void exportImage(const char* fileName);
 
 private:
