@@ -19,7 +19,9 @@ class Vec
 {
 public:
     Vec();
+    Vec(const float& splatValue);
     Vec(const float& xx, const float& yy, const float& zz);
+    Vec(const float& xx, const float& yy, const float& zz, const float& aa);
     Vec(const Vec& another);
     Vec(const vec3D& anotherData);
     Vec(const vector float& anotherVec);

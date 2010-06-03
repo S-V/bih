@@ -9,10 +9,16 @@ Vec::Vec()
     m_val[2] = 0;*/
 	
 	//SIMD
-	data.fVals[0]=0;
+	/*data.fVals[0]=0;
 	data.fVals[1]=0;
 	data.fVals[2]=0;
-	//data.fVals[3]=0;
+	data.fVals[3]=0;*/
+	data.myVec = vec_splats(0.0f);
+}
+
+Vec::Vec(const float& splatValue)
+{
+	data.myVec = vec_splats(splatValue);
 }
 
 Vec::Vec(const float& xx, const float& yy, const float& zz)
@@ -27,7 +33,22 @@ Vec::Vec(const float& xx, const float& yy, const float& zz)
     data.fVals[0]=xx;
     data.fVals[1]=yy;
     data.fVals[2]=zz;
-    //data.fVals[3]=0;
+    data.fVals[3]=0;
+}
+
+Vec::Vec(const float& xx, const float& yy, const float& zz, const float& aa)
+{
+    //m_val = new float[3];
+    
+	/*m_val[0] = xx;
+    m_val[1] = yy;
+    m_val[2] = zz;*/
+	
+	//SIMD
+    data.fVals[0]=xx;
+    data.fVals[1]=yy;
+    data.fVals[2]=zz;
+    data.fVals[3]=aa;
 }
 
 Vec::Vec(const Vec& another)
