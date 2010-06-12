@@ -33,7 +33,7 @@ void Bih::buildBIH(Scene* scene)
     m_tree->m_max = new Vec(scene->boundingBox().max().x(),scene->boundingBox().max().y(),scene->boundingBox().max().z()); //for stackless
 
     //recursive tree construction
-    buildBIHRecur(m_tree, 0, m_primitives->size()-1, scene->boundingBox().min(), scene->boundingBox().max());
+    buildBIHRecur(m_tree, 0, m_primitives->size()-1, scene->boundingBox().min(), scene->boundingBox().max(), scene->boundingBox().min(), scene->boundingBox().max());
 }
 
 void Bih::setLeafNode(BihNode* currentNode, Face* primitive, const int& primitiveCount)
@@ -49,7 +49,7 @@ void Bih::setLeafNode(BihNode* currentNode, Face* primitive, const int& primitiv
     *(currentNode->m_axisOrPrimitiveCount) = primitiveCount;
 }
 
-void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& maxIndex, const Vec& min, const Vec& max)
+void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& maxIndex, const Vec& min, const Vec& max, const Vec& minBox, const Vec& maxBox)
 {
 	//printf("BIH construct: min %d max %d\n",minIndex, maxIndex);
     // Determine if leaf or inner node
@@ -295,31 +295,33 @@ void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& ma
             universalID++; //for debug
             currentNode->m_leftChild->m_parent = currentNode;
             
+            minNewBound = Vec(minBox[0], minBox[1], minBox[2]);
+            
             switch(*(currentNode->m_axisOrPrimitiveCount))
             {
             case 0: //  X - axis
                 minNew = Vec(min[0], min[1], min[2]);
 				maxNew = Vec(split_pos, max[1], max[2]);
-				maxNewBound = Vec(split_max, max[1], max[2]);
+				maxNewBound = Vec(split_max, maxBox[1], maxBox[2]);
 				//buildBIHRecur(currentNode->m_leftChild,minIndex,minIndex+(l_count-1), minNew, maxNew);
                 break;
             case 1: // Y - axis
                 minNew = Vec(min[0], min[1], min[2]);
 				maxNew = Vec(max[0], split_pos, max[2]);
-				maxNewBound = Vec(max[0], split_max, max[2]);
+				maxNewBound = Vec(maxBox[0], split_max, maxBox[2]);
 				//buildBIHRecur(currentNode->m_leftChild,minIndex,minIndex+(l_count-1), minNew, maxNew);
                 break;
             case 2: // Z - axis
                 minNew = Vec(min[0], min[1], min[2]);
 				maxNew = Vec(max[0], max[1], split_pos);
-				maxNewBound = Vec(max[0], max[1], split_max);
+				maxNewBound = Vec(maxBox[0], maxBox[1], split_max);
 				//buildBIHRecur(currentNode->m_leftChild,minIndex,minIndex+(l_count-1), minNew, maxNew);
                 break;
             }
             
-            currentNode->m_leftChild->m_min = new Vec(minNew[0],minNew[1], minNew[2]); //for stackless
+            currentNode->m_leftChild->m_min = new Vec(minNewBound[0],minNewBound[1], minNewBound[2]); //for stackless
             currentNode->m_leftChild->m_max = new Vec(maxNewBound[0],maxNewBound[1], maxNewBound[2]); //for stackless
-			buildBIHRecur(currentNode->m_leftChild,minIndex,minIndex+(l_count-1), minNew, maxNew);
+			buildBIHRecur(currentNode->m_leftChild,minIndex,minIndex+(l_count-1), minNew, maxNew, minNewBound, maxNewBound);
         }
         if(r_count>0)
         {
@@ -328,31 +330,33 @@ void Bih::buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& ma
             universalID++; //for debug
             currentNode->m_rightChild->m_parent = currentNode;
         
+            maxNewBound = Vec(maxBox[0], maxBox[1], maxBox[2]);
+            
             switch(*(currentNode->m_axisOrPrimitiveCount))
             {
             case 0: //  X - axis
                 minNew = Vec(split_pos, min[1], min[2]);
 				maxNew = Vec(max[0], max[1], max[2]);
-				minNewBound = Vec(split_min, min[1], min[2]);
+				minNewBound = Vec(split_min, minBox[1], minBox[2]);
 				//buildBIHRecur(currentNode->m_rightChild,minIndex+l_count,maxIndex, minNew, maxNew);
                 break;
             case 1: // Y - axis
                 minNew = Vec(min[0], split_pos, min[2]);
 				maxNew = Vec(max[0], max[1], max[2]);
-				minNewBound = Vec(min[0], split_min, min[2]);
+				minNewBound = Vec(minBox[0], split_min, minBox[2]);
 				//buildBIHRecur(currentNode->m_rightChild,minIndex+l_count,maxIndex, minNew, maxNew);
                 break;
             case 2: // Z - axis
                 minNew = Vec(min[0], min[1], split_pos);
 				maxNew = Vec(max[0], max[1], max[2]);
-				minNewBound = Vec(min[0], min[1], split_min);
+				minNewBound = Vec(minBox[0], minBox[1], split_min);
 				//buildBIHRecur(currentNode->m_rightChild,minIndex+l_count,maxIndex, minNew, maxNew);
                 break;
             }
             
-            currentNode->m_rightChild->m_min = new Vec(minNewBound[0],minNewBound[1], minNewBound[2]); //for stackless
-            currentNode->m_rightChild->m_max = new Vec(maxNew[0], maxNew[1], maxNew[2]); //for stackless
-            buildBIHRecur(currentNode->m_rightChild,minIndex+l_count,maxIndex, minNew, maxNew);
+            currentNode->m_rightChild->m_min = new Vec(minNewBound[0], minNewBound[1], minNewBound[2]); //for stackless
+            currentNode->m_rightChild->m_max = new Vec(maxNewBound[0], maxNewBound[1], maxNewBound[2]); //for stackless
+            buildBIHRecur(currentNode->m_rightChild,minIndex+l_count,maxIndex, minNew, maxNew, minNewBound, maxNewBound);
         }
         
     } //end else inner node case

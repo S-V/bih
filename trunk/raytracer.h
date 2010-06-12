@@ -39,14 +39,15 @@ public:
                             RayTracer::rayCast(&(rays[38747]), scene, tree) 
                             );*/
 
-        for(int ray_counter=77255;ray_counter < 77256;ray_counter++) 
+        //for(int ray_counter=77255;ray_counter < 77256;ray_counter++) 
+        for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
 		{
             image->setPixel(ray_counter % image->width(),
                             ray_counter / image->width(),
-                            //RayTracer::rayCastStackless(&(rays[ray_counter]), scene, tree) 
-                            RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
+                            RayTracer::rayCastStackless(&(rays[ray_counter]), scene, tree) 
+                            //RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
-            //printf("Ray %d traced\n",ray_counter);
+            //printf("Ray %d traced\n",ray_counter); //for debug
         }
 
         
@@ -446,7 +447,7 @@ public:
 	    // While bih tree traversal has not end
 	    while(currentNode!=0)
 	    {
-	    	printf("node %d\n",currentNode->m_nodeID);
+	    	//printf("node %d\n",currentNode->m_nodeID);
 	    	
 	    	if(currentNode->m_isLeaf)
             {
@@ -493,11 +494,11 @@ public:
                 float t_near = FLT_MIN;
                 float t_far = FLT_MAX;
                 
-                if(currentNode->m_nodeID == 3)
-                {
-                	printf("node3: %.2f %.2f %.2f\n",currentNode->m_min->x(),currentNode->m_min->y(),currentNode->m_min->z());
-                	printf("node3: %.2f %.2f %.2f\n",currentNode->m_max->x(),currentNode->m_max->y(),currentNode->m_max->z());
-                }
+                //if(currentNode->m_nodeID == 3)
+                //{
+                //	printf("node3: %.2f %.2f %.2f\n",currentNode->m_min->x(),currentNode->m_min->y(),currentNode->m_min->z());
+                //	printf("node3: %.2f %.2f %.2f\n",currentNode->m_max->x(),currentNode->m_max->y(),currentNode->m_max->z());
+                //}
 
                 // if intersect current inner node, continue traversal of sub-tree
                 if(intersectRayAABB(scene->getEye(),ray,*(currentNode->m_min),*(currentNode->m_max),t_near,t_far))
@@ -529,8 +530,8 @@ public:
 
 		    l_color = shadeLocal(scene->getEye(),ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene);
 		    
-		    printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
-		    printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
+		    //printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
+		    //printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
 	    }
       
         return l_color;
@@ -565,7 +566,7 @@ public:
         {
 		    // d.	Pop next element in stack (node)
             const BihNode* currentNode = nodeStack.at(0);
-			printf("node %d\n",currentNode->m_nodeID);
+			//printf("node %d\n",currentNode->m_nodeID);
 			/*
 			if(currentNode->m_isLeaf)
 			{
@@ -628,11 +629,11 @@ public:
                 float t_near = FLT_MIN;
                 float t_far = FLT_MAX;
                 
-                if(currentNode->m_nodeID == 3)
-                {
-                	printf("node3: %.2f %.2f %.2f\n",currentMin.x(),currentMin.y(),currentMin.z());
-                	printf("node3: %.2f %.2f %.2f\n",currentMax.x(),currentMax.y(),currentMax.z());
-                }
+                //if(currentNode->m_nodeID == 3)
+                //{
+                //	printf("node3: %.2f %.2f %.2f\n",currentMin.x(),currentMin.y(),currentMin.z());
+                //	printf("node3: %.2f %.2f %.2f\n",currentMax.x(),currentMax.y(),currentMax.z());
+                //}
 
                 if(intersectRayAABB(scene->getEye(),ray,currentMin,currentMax,t_near,t_far))
                 {
@@ -708,8 +709,8 @@ public:
 
 		    l_color = shadeLocal(scene->getEye(),ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene);
 		    
-		    printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
-		    printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
+		    //printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
+		    //printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
 	    }
       
         return l_color;
