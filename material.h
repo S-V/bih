@@ -9,7 +9,6 @@ public:
     Material(){}
     ~Material(){}
 
-//TODO: make member variables private
     Color Ka, Kd, Ks;    // Ambient, Diffuse, Specular constants
     double shine;        // Shininess
     double reflect;      // Reflectiveness: 1=mirror, 0=Lambertian

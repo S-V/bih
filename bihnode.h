@@ -4,6 +4,7 @@
 #include "face.h"
 #include "vertex.h"
 #include "rect.h"
+#include "vec.h"
 #include <vector>
 
 using namespace std;
@@ -15,14 +16,20 @@ public:
     virtual ~BihNode();
 	//BihNode(const BihNode& another);
 
-//TODO: make member variables private
-    bool m_isLeaf;
-    float* m_leftValue;
-    float* m_rightValue;
-    BihNode* m_leftChild;    
-    BihNode* m_rightChild;
-    int* m_axisOrPrimitiveCount;
-    Face* m_primitive;          //pointer owned by class Object
+    bool m_isLeaf;				//both
+    Vec* m_min;					//inner
+    Vec* m_max;					//inner
+    float* m_leftValue;			//inner
+    float* m_rightValue;		//inner
+    BihNode* m_leftChild;    	//inner
+    BihNode* m_rightChild;		//inner
+    BihNode* m_parent;			//inner
+    int* m_axisOrPrimitiveCount;//both
+    Face* m_primitive;          //leaf pointer owned by class Object
+    
+    //for debug
+    int m_primitiveIndex;
+    int m_nodeID;
 };
 
 #endif

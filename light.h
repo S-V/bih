@@ -10,7 +10,6 @@ public:
     Light(){}
     ~Light(){}
 
-//TODO: make member variables private
     Color m_color;
     Vec m_position;
 };
