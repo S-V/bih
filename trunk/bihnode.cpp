@@ -2,12 +2,16 @@
 
 BihNode::BihNode():
     m_isLeaf(false),
+    m_min(0),
+    m_max(0),
     m_leftValue(0),
     m_rightValue(0),
     m_leftChild(0),
     m_rightChild(0),
+    m_parent(0),
     m_axisOrPrimitiveCount(0),
-    m_primitive(0)
+    m_primitive(0),
+    m_primitiveIndex(0) //for debug
 {
 
 }
@@ -35,4 +39,8 @@ BihNode::~BihNode()
         delete m_leftChild;
     if(!m_rightChild)
         delete m_rightChild;
+    if(!m_min)
+    	delete m_min;
+    if(!m_max)
+    	delete m_max;
 }

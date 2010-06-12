@@ -6,6 +6,18 @@
 #include "bihnode.h"
 #include "ray.h"
 #include "color.h"
+#include <exception>
+
+using namespace std;
+
+class TreeRelationshipException: public exception
+{
+  virtual const char* what() const throw()
+  {
+    return "Tree Relationship Exception";
+  }
+} treeEx;
+
 
 class RayTracer
 {
@@ -27,10 +39,11 @@ public:
                             RayTracer::rayCast(&(rays[38747]), scene, tree) 
                             );*/
 
-        for(int ray_counter=0;ray_counter < ray_count;ray_counter++) 
+        for(int ray_counter=77255;ray_counter < 77256;ray_counter++) 
 		{
             image->setPixel(ray_counter % image->width(),
                             ray_counter / image->width(),
+                            //RayTracer::rayCastStackless(&(rays[ray_counter]), scene, tree) 
                             RayTracer::rayCast(&(rays[ray_counter]), scene, tree) 
                             );
             //printf("Ray %d traced\n",ray_counter);
@@ -346,6 +359,182 @@ public:
 
 	    return Color((float)r,(float)g,(float)b);
     }
+    
+    /* Get the next node to move to in tree traversal
+     * 
+     * prevNodeRelation/ - 0 - parent
+     * nextNodeRelation    1 - left child
+     *                     2 - right child
+     *         
+     */
+    static const BihNode* getNextNodeInPath(const BihNode* currentNode, const int& prevNodeRelation, int& nextNodeRelation)
+    {
+    	bool returnParent=false;
+    	
+    	if(prevNodeRelation == 0)		//parent
+    	{
+    		if(currentNode->m_leftChild != 0)
+    		{
+    			nextNodeRelation = 0;
+    			return currentNode->m_leftChild;
+    		}
+    		else if(currentNode->m_rightChild != 0)
+    		{
+    			nextNodeRelation = 0;
+    			return currentNode->m_rightChild;
+    		}
+    		else
+    		{
+    			returnParent=true;
+    		}
+    	}
+    	else if(prevNodeRelation == 1)	//left child
+    	{
+    		if(currentNode->m_rightChild!=0)
+    		{
+    			nextNodeRelation = 0;
+    			return currentNode->m_rightChild;
+    		}
+    		else
+    		{
+    			returnParent=true;
+    		}
+    	}
+    	else if(prevNodeRelation == 2)	//right child
+    	{
+    		returnParent=true;
+    	}
+    	
+    	if(returnParent)
+    	{
+    		if(currentNode->m_parent)
+    		{
+		    	if(currentNode == (currentNode->m_parent->m_leftChild))
+				{
+					nextNodeRelation = 1;
+					return currentNode->m_parent;
+				}
+				else if(currentNode == (currentNode->m_parent->m_rightChild))
+				{
+					nextNodeRelation = 2;
+					return currentNode->m_parent;
+				}
+				else
+					throw treeEx;
+    		}
+    		else 
+    			return 0;
+    	}
+    }
+    
+    static Color rayCastStackless(const Ray* ray, const Scene* scene, const BihNode* tree)
+    {
+    	Color l_color(0,0,0);
+    	
+    	// Traversal variables
+    	const BihNode* currentNode = tree;
+    	int prevNodeRelation = 0; //first traversal step is downwards, relationship to next node is parent
+    	int nextNodeRelation = -1;
+    	
+    	// Intersection variables
+	    Face* nearestPolygon=0;
+	    Vec minIntersectNormal;
+	    double lineIntersectMin=-1.0;
+	    int minPrimitiveIndex=-1; //for debug
+	    int minPrimitiveNodeIndex=-1; //for debug
+    	
+	    // While bih tree traversal has not end
+	    while(currentNode!=0)
+	    {
+	    	printf("node %d\n",currentNode->m_nodeID);
+	    	
+	    	if(currentNode->m_isLeaf)
+            {
+	    		//printf("Hit Leaf\n");
+	    		
+                // Get pointer to Face
+                Face* currentPolygon = currentNode->m_primitive;
+
+                // Loop through each face
+                //for(int polyCount=0; polyCount < *(currentNode->m_axisOrPrimitiveCount); polyCount++)
+			    {
+                    //call to intersection test function, returns line intersection point
+                    Vec intersectNormal;
+                    double intersectPt = intersectRayTriangle(scene->getEye(), ray, currentPolygon, intersectNormal);
+					
+                    //if line intersection point >= 0.0 && < lineIntersectMin,
+                    if(intersectPt>=0.0)
+                    {
+	                    //if((lineIntersectMin<=0.0)||(intersectPt<lineIntersectMin))
+	                    if((lineIntersectMin==-1.0)||(intersectPt<lineIntersectMin))
+	                    {
+		                    //replace lineIntersectMin and nearestPolygon pointer
+		                    lineIntersectMin=intersectPt;
+		                    nearestPolygon=currentPolygon;
+		                    minIntersectNormal=intersectNormal;
+		                    
+		                    //for debug
+		                    minPrimitiveIndex = currentNode->m_primitiveIndex;
+		                    minPrimitiveNodeIndex = currentNode->m_nodeID;
+	                    }
+                    }
+                    //currentPolygon++; //go to next polygon in leave node
+                }
+			    
+			    currentNode = getNextNodeInPath(currentNode, prevNodeRelation, nextNodeRelation);
+			    prevNodeRelation = nextNodeRelation;
+            }//end if node isLeaf
+            //else if is inner node
+            else
+            {
+            	//printf("Hit Inner\n");
+            	
+                //	- if ray intersects current aabb
+                float t_near = FLT_MIN;
+                float t_far = FLT_MAX;
+                
+                if(currentNode->m_nodeID == 3)
+                {
+                	printf("node3: %.2f %.2f %.2f\n",currentNode->m_min->x(),currentNode->m_min->y(),currentNode->m_min->z());
+                	printf("node3: %.2f %.2f %.2f\n",currentNode->m_max->x(),currentNode->m_max->y(),currentNode->m_max->z());
+                }
+
+                // if intersect current inner node, continue traversal of sub-tree
+                if(intersectRayAABB(scene->getEye(),ray,*(currentNode->m_min),*(currentNode->m_max),t_near,t_far))
+                {
+                	//printf("    Continue Sub-tree Traverse\n");
+	                currentNode = getNextNodeInPath(currentNode, prevNodeRelation, nextNodeRelation);
+	                prevNodeRelation = nextNodeRelation;
+                }
+                // else terminate traversal of sub-tree, move on to next subtree
+                else
+                {
+                	//printf("    Terminate Sub-tree Traverse\n");
+                	currentNode = getNextNodeInPath(currentNode, 2, nextNodeRelation); //prev node relation set as right child, force upward traversal
+                	prevNodeRelation = nextNodeRelation;
+                }
+            }//end else if inner node
+	    }
+	    
+	    //set pixel color using nearest polygon if lineIntersect is +ve (intersection occured)
+	    //if(lineIntersectMin>=0.0)
+	    if((nearestPolygon!=0)&&(lineIntersectMin>=0.0))
+	    {
+		    //Call to shading function to get color
+			    //ray - (*ray_iterator)
+			    //interpolated normal at intersection point - minIntersectNormal
+			    //intersection point parameter - lineIntersectMin
+			    //lights - scene
+			    //Reflection/Refraction ray generation
+
+		    l_color = shadeLocal(scene->getEye(),ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene);
+		    
+		    printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
+		    printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
+	    }
+      
+        return l_color;
+    }
 
 	static Color rayCast(const Ray* ray, const Scene* scene, const BihNode* tree)
 	{
@@ -368,12 +557,15 @@ public:
 	    double lineIntersectMin=-1.0;
         Vec currentMin;
         Vec currentMax;
+        
+        int minPrimitiveIndex=-1; //for debug
+        int minPrimitiveNodeIndex=-1; //for debug
 
         while (!nodeStack.empty())
         {
 		    // d.	Pop next element in stack (node)
             const BihNode* currentNode = nodeStack.at(0);
-			
+			printf("node %d\n",currentNode->m_nodeID);
 			/*
 			if(currentNode->m_isLeaf)
 			{
@@ -419,6 +611,10 @@ public:
 		                    lineIntersectMin=intersectPt;
 		                    nearestPolygon=currentPolygon;
 		                    minIntersectNormal=intersectNormal;
+		                    
+		                    //for debug
+		                    minPrimitiveIndex = currentNode->m_primitiveIndex;
+		                    minPrimitiveNodeIndex = currentNode->m_nodeID;
 	                    }
                     }
                     //currentPolygon++; //go to next polygon in leave node
@@ -431,6 +627,12 @@ public:
                 //	- if ray intersects current aabb
                 float t_near = FLT_MIN;
                 float t_far = FLT_MAX;
+                
+                if(currentNode->m_nodeID == 3)
+                {
+                	printf("node3: %.2f %.2f %.2f\n",currentMin.x(),currentMin.y(),currentMin.z());
+                	printf("node3: %.2f %.2f %.2f\n",currentMax.x(),currentMax.y(),currentMax.z());
+                }
 
                 if(intersectRayAABB(scene->getEye(),ray,currentMin,currentMax,t_near,t_far))
                 {
@@ -505,6 +707,9 @@ public:
 			    //Reflection/Refraction ray generation
 
 		    l_color = shadeLocal(scene->getEye(),ray,minIntersectNormal,nearestPolygon,lineIntersectMin,scene);
+		    
+		    printf("min primitive index: %d\n", minPrimitiveIndex);//for debug
+		    printf("min primitive node index: %d\n", minPrimitiveNodeIndex);//for debug
 	    }
       
         return l_color;
