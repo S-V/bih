@@ -7,7 +7,7 @@
 #include "bih.h"
 #include "raytracer.h"
 #include "vec.h"
-#include "color.h"
+//#include "color.h"
 
 using namespace std;
 
@@ -32,9 +32,9 @@ int main( int /*argc*/, const char* /*argv[]*/ )
                                                                                                 printf("Load (Time    ): %d\n", endLoad / CLOCKS_PER_SEC);
 
 	
-    Color l_aColor(.2f,.2f,.2f);
-    Color l_dColor(.6f,.6f,.6f);
-    Color l_sColor(.2f,.2f,.2f);
+    Vec l_aColor(.2f,.2f,.2f);
+    Vec l_dColor(.6f,.6f,.6f);
+    Vec l_sColor(.2f,.2f,.2f);
     double opa = 0.4;
     double ref = 0.5;
     double idx = 1.5;
@@ -50,7 +50,7 @@ int main( int /*argc*/, const char* /*argv[]*/ )
     scene->addObject(targetObject); //ownership of target object taken by scene
     scene->setCamera(Vec(15,10,5),Vec(-2,2.5,0),Vec(0,1,0),5,(3.1427/3.0f)); //eye,lookat,up,pnear,fovx
     Vec light1Location(2.0f,7.0f,6.0f);
-    Color light1Color(1.0f,1.0f,1.0f);
+    Vec light1Color(1.0f,1.0f,1.0f);
     scene->setLight(light1Color, light1Location);
                                                                                                 clock_t endInitScene=clock()-startInitScene;//printf("%d\n",endLoad); 
                                                                                                 printf("Init Scene (C.Cycles): %d\n",endInitScene);

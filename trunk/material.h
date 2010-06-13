@@ -1,7 +1,7 @@
 #ifndef _MATERIAL_H
 #define _MATERIAL_H
 
-#include "color.h"
+#include "vec.h"
 
 class Material
 {
@@ -9,7 +9,7 @@ public:
     Material(){}
     ~Material(){}
 
-    Color Ka, Kd, Ks;    // Ambient, Diffuse, Specular constants
+    Vec Ka, Kd, Ks;    // Ambient, Diffuse, Specular constants
     double shine;        // Shininess
     double reflect;      // Reflectiveness: 1=mirror, 0=Lambertian
     double opacity;      // Translucency: 1=opaque, 0=transparent

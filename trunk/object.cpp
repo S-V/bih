@@ -54,7 +54,7 @@ void Object::setBoundingBox(const Rect& boundingBox)
     m_boundingBox = boundingBox;
 }
 
-void Object::setMaterial(const Color& a, const Color& d, const Color& s, const double& shine, const double& reflect, const double& opacity, const double& refract_idx)
+void Object::setMaterial(const Vec& a, const Vec& d, const Vec& s, const double& shine, const double& reflect, const double& opacity, const double& refract_idx)
 {
     m_material.Ka = a;
     m_material.Kd = d;

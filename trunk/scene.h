@@ -32,7 +32,7 @@ public:
     const double& getNear() const;
     const double& getFovx() const; 
 
-    void setLight(const Color& color, const Vec& position);
+    void setLight(const Vec& color, const Vec& position);
     const Light& light() const;
 
 private:
