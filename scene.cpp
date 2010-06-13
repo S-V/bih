@@ -91,7 +91,7 @@ const double& Scene::getFovx() const
     return m_fovx;
 }
 
-void Scene::setLight(const Color& color, const Vec& position)
+void Scene::setLight(const Vec& color, const Vec& position)
 {
     m_light.m_color = color;
     m_light.m_position = position;

@@ -42,7 +42,7 @@ void Image::setPixel(const int& x, const int& y, const unsigned char& r, const u
     m_rgb[k+2] = b;
 }
 
-void Image::setPixel(const int& x, const int& y, const Color& color)
+void Image::setPixel(const int& x, const int& y, const Vec& color)
 {
     int k = 3*(m_width*y+x);
     m_rgb[k]   = (unsigned char)(color[0]*255.0f);

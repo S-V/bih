@@ -108,7 +108,8 @@ const float& Vec::z()
 float Vec::mag(void) const
 {
     //return sqrt(m_val[0]*m_val[0] + m_val[1]*m_val[1] + m_val[2]*m_val[2]);
-	return sqrt(data.fVals[0]*data.fVals[0] + data.fVals[1]*data.fVals[1] + data.fVals[2]*data.fVals[2]);
+	//return sqrt(data.fVals[0]*data.fVals[0] + data.fVals[1]*data.fVals[1] + data.fVals[2]*data.fVals[2]);
+	return (*this)*(*this);
 }
 /*
 Vec& Vec::operator = (const Vec& v)
@@ -143,6 +144,7 @@ Vec Vec::operator - (void) const
 {
     //return Vec(-m_val[0],-m_val[1],-m_val[2]);
 	return Vec(-data.fVals[0],-data.fVals[1],-data.fVals[2]);
+	
 }
 /*
 Vec Vec::operator ! (void) const
@@ -183,11 +185,11 @@ Vec Vec::operator % (const Vec& v) const
     //return Vec( m_val[1]*v.m_val[2]-m_val[2]*v.m_val[1], m_val[2]*v.m_val[0]-m_val[0]*v.m_val[2], m_val[0]*v.m_val[1]-m_val[1]*v.m_val[0] );
 	return Vec( data.fVals[1]*v.data.fVals[2]-data.fVals[2]*v.data.fVals[1], data.fVals[2]*v.data.fVals[0]-data.fVals[0]*v.data.fVals[2], data.fVals[0]*v.data.fVals[1]-data.fVals[1]*v.data.fVals[0] );
 }*/
-
+/*
 Vec Vec::operator & (const Vec& v) const
 {
     //return Vec(m_val[0]*v.m_val[0],m_val[1]*v.m_val[1],m_val[2]*v.m_val[2]);
 	return Vec(data.fVals[0]*v.data.fVals[0],data.fVals[1]*v.data.fVals[1],data.fVals[2]*v.data.fVals[2]);
 }
-
+*/
 

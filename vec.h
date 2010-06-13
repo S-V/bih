@@ -215,5 +215,13 @@ inline Vec Vec::operator % (const Vec &v) const
 	return (Vec(result));
 }
 
+inline Vec Vec::operator & (const Vec& v) const
+{
+    //return Vec(m_val[0]*v.m_val[0],m_val[1]*v.m_val[1],m_val[2]*v.m_val[2]);
+	Vec zero(0);
+	return Vec(vec_madd(data.myVec, v.data.myVec,zero.data.myVec));
+	//return Vec(data.fVals[0]*v.data.fVals[0],data.fVals[1]*v.data.fVals[1],data.fVals[2]*v.data.fVals[2]);
+}
+
 #endif
 

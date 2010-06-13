@@ -25,7 +25,7 @@ public:
     const Rect& boundingBox();
     void setBoundingBox(const Rect& boundingBox);
 
-    void setMaterial(const Color& a, const Color& d, const Color& s, const double& shine, const double& reflect, const double& opacity, const double& refract_idx);
+    void setMaterial(const Vec& a, const Vec& d, const Vec& s, const double& shine, const double& reflect, const double& opacity, const double& refract_idx);
     const Material& material() const;
 
     void toConsole();

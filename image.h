@@ -4,7 +4,8 @@
 #include "face.h"
 #include "vertex.h"
 #include "rect.h"
-#include "color.h"
+//#include "color.h"
+#include "vec.h"
 #include <vector>
 
 using namespace std;
@@ -20,7 +21,7 @@ public:
 
     void setPixel(const int& index, const unsigned char& r, const unsigned char& g, const unsigned char& b);
     void setPixel(const int& x, const int& y, const unsigned char& r, const unsigned char& g, const unsigned char& b);
-    void setPixel(const int& x, const int& y, const Color& color);
+    void setPixel(const int& x, const int& y, const Vec& color);
     unsigned char* getPixel(const int& index);
 	
 	void exportImage(const char* fileName);

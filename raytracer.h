@@ -5,7 +5,7 @@
 #include "image.h"
 #include "bihnode.h"
 #include "ray.h"
-#include "color.h"
+//#include "color.h"
 #include <exception>
 
 using namespace std;
@@ -53,9 +53,15 @@ public:
         
 	}
 
-    static bool intersectRayAABB(const Vec& origin, const Ray* ray, const Vec& min, const Vec& max, float& t_near, float& t_far)
+    static bool intersectRayAABB(const Vec& origin, const Ray* ray, const Vec& min, const Vec& max/*, float& t_near, float& t_far*/)
     {
+    	float t_near = FLT_MIN;
+    	float t_far = FLT_MAX;
+    	
 	    // X - PLANE
+    		//Optimizing for SPU
+    		Vec minMinusOrigin = min - origin;
+    		Vec maxMinusOrigin = max - origin;
 		
 		    //1. if ray direction is parallel to AABB
 		    if(ray->direction()[0] == 0.0f)
@@ -69,8 +75,12 @@ public:
 		    else
 		    {
 			    //compute intersection distance of planes
-			    float T1 = ((min[0] - (origin)[0]))/ ((ray->direction())[0]);
-			    float T2 = ((max[0] - (origin)[0]))/ ((ray->direction())[0]);
+		    	//Optimizing for SPU
+			    //float T1 = ((min[0] - (origin)[0]))/ ((ray->direction())[0]);
+			    //float T2 = ((max[0] - (origin)[0]))/ ((ray->direction())[0]);
+			    
+			    float T1 = (minMinusOrigin[0])/ ((ray->direction())[0]);
+			    float T2 = (maxMinusOrigin[0])/ ((ray->direction())[0]);
 
 			    //swap if T1>T2 since T1 intersection with near plane
 			    if(T1>T2)
@@ -107,8 +117,12 @@ public:
 		    else
 		    {
 			    //computer intersection distance of planes
-			    float T1 = ((min[1] - (origin)[1]))/ ((ray->direction())[1]);
-			    float T2 = ((max[1] - (origin)[1]))/ ((ray->direction())[1]);
+		    	//Optimizing for SPU
+			    //float T1 = ((min[1] - (origin)[1]))/ ((ray->direction())[1]);
+			    //float T2 = ((max[1] - (origin)[1]))/ ((ray->direction())[1]);
+		    	
+		    	float T1 = (minMinusOrigin[1])/ ((ray->direction())[1]);
+			    float T2 = (maxMinusOrigin[1])/ ((ray->direction())[1]);
 
 			    //swap if T1>T2 since T1 intersection with near plane
 			    if(T1>T2)
@@ -145,9 +159,13 @@ public:
 		    else
 		    {
 			    //computer intersection distance of planes
-			    float T1 = ((min[2] - (origin)[2]))/ ((ray->direction())[2]);
-			    float T2 = ((max[2] - (origin)[2]))/ ((ray->direction())[2]);
+		    	//Optimizing for SPU
+			    //float T1 = ((min[2] - (origin)[2]))/ ((ray->direction())[2]);
+			    //float T2 = ((max[2] - (origin)[2]))/ ((ray->direction())[2]);
 
+		    	float T1 = (minMinusOrigin[2])/ ((ray->direction())[2]);
+			    float T2 = (maxMinusOrigin[2])/ ((ray->direction())[2]);
+		    				    
 			    //swap if T1>T2 since T1 intersection with near plane
 			    if(T1>T2)
 			    {
@@ -179,21 +197,27 @@ public:
         //find normal N, of triangle polygon and a point on it (plane of triangle)
 	
         //distance D, along ray where ray intersects plane of triangle
-        Vec ray_origin;
-        ray_origin = Vec(origin[0],origin[1],origin[2]);
+    	//Optimizing for SPU
+        //Vec ray_origin;
+        //ray_origin = Vec(origin[0],origin[1],origin[2]);
  
-        Vec polygon_v1;
-        polygon_v1 = Vec(polygon->getVertex(0)->position()[0],polygon->getVertex(0)->position()[1],polygon->getVertex(0)->position()[2]);
-        
-        Vec polygon_v2;
-        polygon_v2 = Vec(polygon->getVertex(1)->position()[0],polygon->getVertex(1)->position()[1],polygon->getVertex(1)->position()[2]);
-        
-        Vec polygon_v3;
-        polygon_v3 = Vec(polygon->getVertex(2)->position()[0],polygon->getVertex(2)->position()[1],polygon->getVertex(2)->position()[2]);
+        //Optimizing for SPU
+        //Vec polygon_v1;
+        //polygon_v1 = Vec(polygon->getVertex(0)->position()[0],polygon->getVertex(0)->position()[1],polygon->getVertex(0)->position()[2]);
+        //Vec polygon_v2;
+        //polygon_v2 = Vec(polygon->getVertex(1)->position()[0],polygon->getVertex(1)->position()[1],polygon->getVertex(1)->position()[2]);
+        //Vec polygon_v3;
+        //polygon_v3 = Vec(polygon->getVertex(2)->position()[0],polygon->getVertex(2)->position()[1],polygon->getVertex(2)->position()[2]);
+        Vec polygon_v1 = polygon->getVertex(0)->position();
+        Vec polygon_v2 = polygon->getVertex(1)->position();
+        Vec polygon_v3 = polygon->getVertex(2)->position();
 
-        double plane_d = (polygon->normal()[0] * polygon->getVertex(0)->position()[0]) +
+        //Optimizing for SPU
+        /*double plane_d = (polygon->normal()[0] * polygon->getVertex(0)->position()[0]) +
 			            (polygon->normal()[1] * polygon->getVertex(0)->position()[1]) +
-			            (polygon->normal()[2] * polygon->getVertex(0)->position()[2]);
+			            (polygon->normal()[2] * polygon->getVertex(0)->position()[2]);*/  
+        float plane_d = polygon->normal() * (polygon->getVertex(0)->position());
+        
         double distance=-1.0;
         double distanceReal=0.0;
         double distancePerUnit=0.0;
@@ -210,13 +234,16 @@ public:
         if(distance<0.0)
             {return distance;} 
 
-        Vec ray_minus_polyv1 = ray_origin-polygon_v1;
+        //Optimizing for SPU
+        //Vec ray_minus_polyv1 = ray_origin-polygon_v1;
+        Vec ray_minus_polyv1 = origin - polygon->getVertex(0)->position();
+        
         //double polyNormalTimeAbove = (polygon->normal())*ray_minus_polyv1;
 
         //double rayTimesPolyNormal = (ray->direction()) * (polygon->normal());
 
         //Substitute D into parametric equation of ray to find point P, where ray intersects plane
-        Vec intersect_pt = ray_origin + ((ray->direction())*(float)distance);
+        Vec intersect_pt = origin + ((ray->direction())*(float)distance);
 
         //Now we have A/B/C (vertices of polygon) and P
         //In barycentric coord, wA + uB + vC = P
@@ -280,10 +307,17 @@ public:
         {
             //w for vertex 1
             double w=1.0-u-v;
+            
+            //Optimizing for SPU
+            /*
             intersectionNormal = Vec((float)(u*polygon->getVertex(0)->normal()[0] + v*polygon->getVertex(1)->normal()[0] + w*polygon->getVertex(2)->normal()[0]),
 						            (float)(u*polygon->getVertex(0)->normal()[1] + v*polygon->getVertex(1)->normal()[1] + w*polygon->getVertex(2)->normal()[1]),
 						            (float)(u*polygon->getVertex(0)->normal()[2] + v*polygon->getVertex(1)->normal()[2] + w*polygon->getVertex(2)->normal()[2])
                                 );
+                                */
+            intersectionNormal = (polygon->getVertex(0)->normal() * u) +
+            						(polygon->getVertex(1)->normal() * v) +
+            						(polygon->getVertex(2)->normal() * w);
             intersectionNormal = !intersectionNormal;
             return distance;
         }
@@ -307,13 +341,15 @@ public:
         else return -1.0;
     }
 
-    static Color shadeLocal(const Vec& origin, const Ray* ray, const Vec& normal, const Face* /*polygon*/, const double& parameter, const Scene* scene)
+    static Vec shadeLocal(const Vec& origin, const Ray* ray, const Vec& normal, const Face* /*polygon*/, const double& parameter, const Scene* scene)
     {
 	    //point of intersection
 	    Vec p = origin + ((ray->direction())*(float)parameter);
 
 	    //result color components
-	    double r=0,g=0,b=0; 
+	    //Optimizing for SPU
+	    //double r=0,g=0,b=0;
+	    Vec l_rgb(0);
 
 	    //normalized vector from p to viewer (normalize opposite ray direction)
 	    Vec v = (ray->direction())*-1.0;
@@ -337,12 +373,23 @@ public:
 			    double diffuseFactor = (l*normal);
 			    if(diffuseFactor<0.0)
 			    {
-				    r=l_material.Ka[0] * scene->light().m_color[0];
-				    g=l_material.Ka[1] * scene->light().m_color[1];
-				    b=l_material.Ka[2] * scene->light().m_color[2];
+				    //r=l_material.Ka[0] * scene->light().m_color[0];
+				    //g=l_material.Ka[1] * scene->light().m_color[1];
+				    //b=l_material.Ka[2] * scene->light().m_color[2];
+				    
+				    l_rgb = l_material.Ka & scene->light().m_color;
 			    }
                 else
                 {
+                	/*
+                	Vec a(l_material.Ka[0],l_material.Kd[0],l_material.Ks[0]);
+                	Vec b(l_material.Ka[1],l_material.Kd[1],l_material.Ks[1]);
+                	Vec c(l_material.Ka[2],l_material.Kd[2],l_material.Ks[2]);*/
+                	
+                	l_rgb = (l_material.Ka & scene->light().m_color ) +
+                	        (l_material.Kd * diffuseFactor & scene->light().m_color) +
+                	        (l_material.Ks * specularFactor & scene->light().m_color);
+                	/*
 			        r = (l_material.Ka[0]  * scene->light().m_color[0] + //ambient
 						        l_material.Kd[0]  * diffuseFactor * scene->light().m_color[0] + //diffuse
 						        l_material.Ks[0]  * specularFactor * scene->light().m_color[0]); //specular
@@ -354,11 +401,13 @@ public:
 			        b = (l_material.Ka[2]  * scene->light().m_color[2] + //ambient
 				        l_material.Kd[2]  * diffuseFactor * scene->light().m_color[2] + //diffuse
 				        l_material.Ks[2]  * specularFactor * scene->light().m_color[2]); //specular
+				        */
                 }
 		    }
 	    }
 
-	    return Color((float)r,(float)g,(float)b);
+	    //return Color((float)r,(float)g,(float)b);
+	    return l_rgb;
     }
     
     /* Get the next node to move to in tree traversal
@@ -428,9 +477,9 @@ public:
     	}
     }
     
-    static Color rayCastStackless(const Ray* ray, const Scene* scene, const BihNode* tree)
+    static Vec rayCastStackless(const Ray* ray, const Scene* scene, const BihNode* tree)
     {
-    	Color l_color(0,0,0);
+    	Vec l_color(0,0,0);
     	
     	// Traversal variables
     	const BihNode* currentNode = tree;
@@ -491,8 +540,8 @@ public:
             	//printf("Hit Inner\n");
             	
                 //	- if ray intersects current aabb
-                float t_near = FLT_MIN;
-                float t_far = FLT_MAX;
+                //float t_near = FLT_MIN;
+                //float t_far = FLT_MAX;
                 
                 //if(currentNode->m_nodeID == 3)
                 //{
@@ -501,7 +550,7 @@ public:
                 //}
 
                 // if intersect current inner node, continue traversal of sub-tree
-                if(intersectRayAABB(scene->getEye(),ray,*(currentNode->m_min),*(currentNode->m_max),t_near,t_far))
+                if(intersectRayAABB(scene->getEye(),ray,*(currentNode->m_min),*(currentNode->m_max)/*,t_near,t_far*/))
                 {
                 	//printf("    Continue Sub-tree Traverse\n");
 	                currentNode = getNextNodeInPath(currentNode, prevNodeRelation, nextNodeRelation);
@@ -537,9 +586,9 @@ public:
         return l_color;
     }
 
-	static Color rayCast(const Ray* ray, const Scene* scene, const BihNode* tree)
+	static Vec rayCast(const Ray* ray, const Scene* scene, const BihNode* tree)
 	{
-        Color l_color(0,0,0);
+        Vec l_color(0,0,0);
 
         // a.	Initialize recursive call stacks
 	    vector<const BihNode*> nodeStack;
@@ -626,8 +675,8 @@ public:
             else
             {
                 //	- if ray intersects current aabb
-                float t_near = FLT_MIN;
-                float t_far = FLT_MAX;
+                //float t_near = FLT_MIN;
+                //float t_far = FLT_MAX;
                 
                 //if(currentNode->m_nodeID == 3)
                 //{
@@ -635,7 +684,7 @@ public:
                 //	printf("node3: %.2f %.2f %.2f\n",currentMax.x(),currentMax.y(),currentMax.z());
                 //}
 
-                if(intersectRayAABB(scene->getEye(),ray,currentMin,currentMax,t_near,t_far))
+                if(intersectRayAABB(scene->getEye(),ray,currentMin,currentMax/*,t_near,t_far*/))
                 {
 	                //	- get split axis
 	                int split_axis = *(currentNode->m_axisOrPrimitiveCount);
