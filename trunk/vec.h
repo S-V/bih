@@ -4,13 +4,12 @@
 #include <exception>
 #include <stdio.h>
 #include "vec3D.h"
-/*#ifdef __SPU__
+#ifdef __SPU__
 #include <spu_intrinsics.h>
 #else
-*/
 #include <altivec.h>
 #include <ppu_intrinsics.h>
-//#endif
+#endif
 #include <simdmath/rsqrtf4.h>
 
 using namespace std;
@@ -18,26 +17,114 @@ using namespace std;
 class Vec 
 {
 public:
-    Vec();
-    Vec(const float& splatValue);
-    Vec(const float& xx, const float& yy, const float& zz);
-    Vec(const float& xx, const float& yy, const float& zz, const float& aa);
-    Vec(const Vec& another);
-    Vec(const vec3D& anotherData);
-    Vec(const vector float& anotherVec);
-    virtual ~Vec();
+    Vec()
+    {
+#ifdef __SPU__
+    	data.myVec = spu_splats(0.0f);
+#else
+    	data.myVec = vec_splats(0.0f);
+#endif
+    }
+    Vec(const float& splatValue)
+    {
+#ifdef __SPU__
+    	data.myVec = spu_splats(splatValue);
+#else
+    	data.myVec = vec_splats(splatValue);
+#endif
+    }
+    Vec(const float& xx, const float& yy, const float& zz)
+    {
+        //m_val = new float[3];
+        
+    	/*m_val[0] = xx;
+        m_val[1] = yy;
+        m_val[2] = zz;*/
+    	
+    	//SIMD
+        data.fVals[0]=xx;
+        data.fVals[1]=yy;
+        data.fVals[2]=zz;
+        data.fVals[3]=0;
+    }
+    Vec(const float& xx, const float& yy, const float& zz, const float& aa)
+    {
+        //m_val = new float[3];
+        
+    	/*m_val[0] = xx;
+        m_val[1] = yy;
+        m_val[2] = zz;*/
+    	
+    	//SIMD
+        data.fVals[0]=xx;
+        data.fVals[1]=yy;
+        data.fVals[2]=zz;
+        data.fVals[3]=aa;
+    }
+    Vec(const Vec& another)
+    {
+        //m_val = new float[3];
+        /*m_val[0] = another.m_val[0];
+        m_val[1] = another.m_val[1];
+        m_val[2] = another.m_val[2];*/
+    	
+    	//SIMD
+    	//data.fVals[0]=another.data.fVals[0];
+        //data.fVals[1]=another.data.fVals[1];
+        //data.fVals[2]=another.data.fVals[2];
+        //data.fVals[3]=another.data.fVals[3];
+    	data.myVec = another.data.myVec;
+    }
+    Vec(const vec3D& anotherData)
+    {
+    /*#ifdef __SPU__
+    	spu_splat(data.myVec,0);
+    	data.myVec = spu_add(data.myVec,anotherData.myVec);
+    #else*/
+    	//vec_splat(data.myVec,0);
+    	//data.myVec = vec_add(data.myVec,anotherData.myVec);
+    //#endif
+    	data.myVec = anotherData.myVec;
+    }
+    Vec(const vector float& anotherVec)
+    {
+    	data.myVec = anotherVec;
+    }
+    virtual ~Vec(){}
 
-    const float& x();
-    const float& y();
-    const float& z();
+    const float& x()
+    {
+        //return m_val[0];
+    	return data.fVals[0];
+    }
+    const float& y()
+    {
+        //return m_val[0];
+    	return data.fVals[1];
+    }
+    const float& z()
+    {
+        //return m_val[0];
+    	return data.fVals[2];
+    }
 
-    float mag(void) const;                  // returns magnitude
+    float mag(void) const // returns magnitude
+    {
+        //return sqrt(m_val[0]*m_val[0] + m_val[1]*m_val[1] + m_val[2]*m_val[2]);
+    	//return sqrt(data.fVals[0]*data.fVals[0] + data.fVals[1]*data.fVals[1] + data.fVals[2]*data.fVals[2]);
+    	return (*this)*(*this);
+    }
 
     Vec& operator= (const Vec& v);
-    float& operator[] (const int& index);
-    const float& operator[] (const int& index) const;
+    float& operator[] (const int& index){return data.fVals[index];}
+    const float& operator[] (const int& index) const{return data.fVals[index];}
     
-    Vec operator - (void) const;            // Negate
+    Vec operator - (void) const            // Negate
+    {
+        //return Vec(-m_val[0],-m_val[1],-m_val[2]);
+    	return Vec(-data.fVals[0],-data.fVals[1],-data.fVals[2]);
+    	
+    }
     Vec operator ! (void) const;            // Normalize: returns unit vector
 
     Vec operator + (const Vec& v) const;    // Add to
@@ -53,10 +140,11 @@ private:
 	vec3D data;
 };
 
-static __inline float _sum_across_float3(vector float v) {
+static __inline float _sum_across_float3(vector float v)
+{
 	vector float c2, c3;
 
-/*#ifdef __SPU__
+#ifdef __SPU__
 	vector float result;
 
 	c2 = spu_rlqwbyte(v, 4);
@@ -65,7 +153,7 @@ static __inline float _sum_across_float3(vector float v) {
 	result = spu_add(result, c3);
 
 	return (spu_extract(result, 0));
-#else*/
+#else
 	union {
 		vector float fv;
 		float f[4];
@@ -77,8 +165,7 @@ static __inline float _sum_across_float3(vector float v) {
 	result.fv = vec_add(result.fv, c3);
 
 	return (result.f[0]);
-//#endif
-
+#endif
 }
 
 inline Vec Vec::operator !(void) const
@@ -92,7 +179,7 @@ inline Vec Vec::operator !(void) const
 				0x00, 0x01, 0x02, 0x03,
 				0x00, 0x00, 0x00, 0x00}
 	);
-/*#ifdef __SPU__
+#ifdef __SPU__
 	x2y2z2 = spu_mul(data.myVec, data.myVec);
 	y2z2x2 = spu_shuffle(x2y2z2, x2y2z2, shuffle);
 	z2x2y2 = spu_shuffle(y2z2x2, y2z2x2, shuffle);
@@ -100,7 +187,7 @@ inline Vec Vec::operator !(void) const
 	sum = spu_add(sum, z2x2y2);
 	scale = _rsqrtf4(sum);
 	return Vec(spu_mul(scale, data.myVec));
-#else*/
+#else
 	vector float vzero = ((vector float) {0.0f,0.0f,0.0f,0.0f});
 
 	x2y2z2 = vec_madd(data.myVec, data.myVec, vzero);
@@ -110,19 +197,19 @@ inline Vec Vec::operator !(void) const
 	sum = vec_add(sum, z2x2y2);
 	scale = _rsqrtf4(sum);
 	return Vec(vec_madd(scale, data.myVec, vzero));
-//#endif
+#endif
 
 }
 
 inline Vec Vec::operator + (const Vec& v) const
 {
-	/*
+	
 #ifdef __SPU__
 	return Vec(spu_add(data.myVec,v.data.myVec));
 #else
-	//return Vec(vec_add(data.myVec,v.data.myVec));
+	return Vec(vec_add(data.myVec,v.data.myVec));
 #endif
-*/
+
 	//Vec result;
 	//result.data.myVec = vec_add(data.myVec,v.data.myVec);
 	/*
@@ -138,16 +225,16 @@ inline Vec Vec::operator + (const Vec& v) const
 		throw exception();
 	*/
 	//return Vec(result.data.fVals[0],result.data.fVals[1], result.data.fVals[2]);
-	return Vec(vec_add(data.myVec, v.data.myVec));
+	//return Vec(vec_add(data.myVec, v.data.myVec));
 }
 
 inline Vec Vec::operator - (const Vec& v) const
 {
-/*#ifdef __SPU__
+#ifdef __SPU__
 	return Vec(spu_sub(data.myVec,v.data.myVec));
-#else*/
+#else
 	return Vec(vec_sub(data.myVec,v.data.myVec));
-//#endif
+#endif
 }
 
 inline Vec& Vec::operator = (const Vec& v)
@@ -159,21 +246,21 @@ inline Vec& Vec::operator = (const Vec& v)
 inline Vec Vec::operator * (const float& num) const
 {
 	vector float scaleVec = (vector float) {num, num, num};
-//#ifdef __SPU__
-//	return Vec(spu_mul(data.myVec,scaleVec));
-//#else
+#ifdef __SPU__
+	return Vec(spu_mul(data.myVec,scaleVec));
+#else
 	vector float vzero = ((vector float) {0.0f,0.0f,0.0f,0.0f});
 	return Vec(vec_madd(data.myVec,scaleVec,vzero));
-//#endif
+#endif
 }
 
 inline float Vec::operator * (const Vec &v) const
 {
 	vector float product;
-/*#ifdef __SPU__
+#ifdef __SPU__
 	product = spu_mul(data.myVec, v.data.myVec);
 	return (_sum_across_float3(product));
-#else*/
+#else
 	union {
 		float f[4];
 		vector float v;
@@ -186,7 +273,7 @@ inline float Vec::operator * (const Vec &v) const
 	result.v = vec_add(product, y);
 	result.v = vec_add(result.v, z);
 	return (result.f[0]);
-//#endif
+#endif
 
 }
 
@@ -199,28 +286,30 @@ inline Vec Vec::operator % (const Vec &v) const
 				0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
 				0x00, 0x01, 0x02, 0x03, 0x0C, 0x0D, 0x0E, 0x0F});
 
-/*#ifdef __SPU__
+#ifdef __SPU__
 	yzxw1 = spu_shuffle(data.myVec, data.myVec, shuffle_yzxw);
 	yzxw2 = spu_shuffle(v.data.myVec, v.data.myVec, shuffle_yzxw);
 	result = spu_mul(data.myVec, yzxw2);
 	result = spu_nmsub(v.data.myVec, yzxw1, result);
 	result = spu_shuffle(result, result, shuffle_yzxw);
-#else*/
+#else
 	yzxw1 = vec_perm(data.myVec, data.myVec, shuffle_yzxw);
 	yzxw2 = vec_perm(v.data.myVec, v.data.myVec, shuffle_yzxw);
 	result = vec_madd(data.myVec, yzxw2, ((vector float) {0.0,0.0,0.0,0.0}));
 	result = vec_nmsub(v.data.myVec, yzxw1, result);
 	result = vec_perm(result, result, shuffle_yzxw);
-//#endif
+#endif
 	return (Vec(result));
 }
 
 inline Vec Vec::operator & (const Vec& v) const
 {
-    //return Vec(m_val[0]*v.m_val[0],m_val[1]*v.m_val[1],m_val[2]*v.m_val[2]);
+#ifdef __SPU__
+	return Vec(spu_mul(data.myVec,v.data.myVec));
+#else
 	Vec zero(0);
 	return Vec(vec_madd(data.myVec, v.data.myVec,zero.data.myVec));
-	//return Vec(data.fVals[0]*v.data.fVals[0],data.fVals[1]*v.data.fVals[1],data.fVals[2]*v.data.fVals[2]);
+#endif
 }
 
 #endif

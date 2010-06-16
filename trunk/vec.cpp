@@ -1,34 +1,9 @@
 #include "vec.h"
 #include <math.h>
 
-Vec::Vec()
-{
-    //m_val = new float[3];
-    /*m_val[0] = 0;
-    m_val[1] = 0;
-    m_val[2] = 0;*/
-	
-	//SIMD
-	/*data.fVals[0]=0;
-	data.fVals[1]=0;
-	data.fVals[2]=0;
-	data.fVals[3]=0;*/
-	data.myVec = vec_splats(0.0f);
-}
-
-Vec::Vec(const float& splatValue)
-{
-	data.myVec = vec_splats(splatValue);
-}
-
+/*
 Vec::Vec(const float& xx, const float& yy, const float& zz)
 {
-    //m_val = new float[3];
-    
-	/*m_val[0] = xx;
-    m_val[1] = yy;
-    m_val[2] = zz;*/
-	
 	//SIMD
     data.fVals[0]=xx;
     data.fVals[1]=yy;
@@ -38,12 +13,6 @@ Vec::Vec(const float& xx, const float& yy, const float& zz)
 
 Vec::Vec(const float& xx, const float& yy, const float& zz, const float& aa)
 {
-    //m_val = new float[3];
-    
-	/*m_val[0] = xx;
-    m_val[1] = yy;
-    m_val[2] = zz;*/
-	
 	//SIMD
     data.fVals[0]=xx;
     data.fVals[1]=yy;
@@ -53,38 +22,15 @@ Vec::Vec(const float& xx, const float& yy, const float& zz, const float& aa)
 
 Vec::Vec(const Vec& another)
 {
-    //m_val = new float[3];
-    /*m_val[0] = another.m_val[0];
-    m_val[1] = another.m_val[1];
-    m_val[2] = another.m_val[2];*/
-	
-	//SIMD
-	//data.fVals[0]=another.data.fVals[0];
-    //data.fVals[1]=another.data.fVals[1];
-    //data.fVals[2]=another.data.fVals[2];
-    //data.fVals[3]=another.data.fVals[3];
 	data.myVec = another.data.myVec;
 }
 
 Vec::Vec(const vec3D& anotherData) {
-/*#ifdef __SPU__
-	spu_splat(data.myVec,0);
-	data.myVec = spu_add(data.myVec,anotherData.myVec);
-#else*/
-	//vec_splat(data.myVec,0);
-	//data.myVec = vec_add(data.myVec,anotherData.myVec);
-//#endif
 	data.myVec = anotherData.myVec;
-}
-
+}*/
+/*
 Vec::Vec(const vector float& anotherVec) {
 	data.myVec = anotherVec;
-}
-
-Vec::~Vec()
-{
-    //if(m_val)
-    //    delete[] m_val;
 }
 
 const float& Vec::x()
@@ -110,7 +56,7 @@ float Vec::mag(void) const
     //return sqrt(m_val[0]*m_val[0] + m_val[1]*m_val[1] + m_val[2]*m_val[2]);
 	//return sqrt(data.fVals[0]*data.fVals[0] + data.fVals[1]*data.fVals[1] + data.fVals[2]*data.fVals[2]);
 	return (*this)*(*this);
-}
+}*/
 /*
 Vec& Vec::operator = (const Vec& v)
 {
@@ -127,7 +73,7 @@ Vec& Vec::operator = (const Vec& v)
 
     return (*this);
 }*/
-
+/*
 float& Vec::operator [] (const int& index)
 {
     //return m_val[index];
@@ -145,7 +91,7 @@ Vec Vec::operator - (void) const
     //return Vec(-m_val[0],-m_val[1],-m_val[2]);
 	return Vec(-data.fVals[0],-data.fVals[1],-data.fVals[2]);
 	
-}
+}*/
 /*
 Vec Vec::operator ! (void) const
 {

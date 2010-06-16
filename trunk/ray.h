@@ -201,15 +201,15 @@ public:
     }
 
 public:
-    Ray();
+    Ray(){}
     Ray(/*const Vec& position,*/ const Vec& direction);
-    virtual ~Ray();
+    virtual ~Ray(){}
 
     //Vec& position();
-    Vec& direction();
+    Vec& direction(){return m_direction;}
 
     //const Vec& position() const;
-    const Vec& direction() const;
+    //const Vec& direction() const{return m_direction;}
 
     void set(/*const Vec& position,*/ const Vec& direction);
 
