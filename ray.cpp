@@ -1,37 +1,22 @@
 #include "ray.h"
 #include <stdio.h>
 
-Ray::Ray()
-{
-}
-
 Ray::Ray(/*const Vec& position, */const Vec& direction):/*m_position(position),*/m_direction(direction)
 {
 }
 
-Ray::~Ray()
-{
-}
 /*
 Vec& Ray::position()
 {
     return m_position;
 }*/
 
-Vec& Ray::direction()
-{
-    return m_direction;
-}
 /*
 const Vec& Ray::position() const
 {
     return m_position;
 }
 */
-const Vec& Ray::direction() const
-{
-   return m_direction;
-}
 
 Ray& Ray::operator = (const Ray& another)
 {

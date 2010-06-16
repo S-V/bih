@@ -1,7 +1,8 @@
 #ifndef _VEC3D_H_
 #define _VEC3D_H_
 
-#include <ppu_intrinsics.h>
+//#include <ppu_intrinsics.h>
+#include <vec_types.h>
 
 typedef union {
 	float fVals[4];
