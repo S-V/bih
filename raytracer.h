@@ -4,7 +4,11 @@
 #include "scene.h"
 #include "image.h"
 #include "bihnode.h"
+#include "bihnodeannex.h"
+#include "faceannex.h"
 #include "ray.h"
+#include "sceneannex.h"
+#include "raytracerControl.h"
 #include <exception>
 
 #include <stdlib.h>
@@ -12,10 +16,18 @@
 #include <errno.h>
 #include <libspe2.h>
 #include <pthread.h>
+#include <spu_mfcio.h>
 
 extern spe_program_handle_t bihCellSPU;
 
-#define SPU_THREADS 6
+typedef struct _ppu_thread_ray_generator_data 
+{
+  spe_context_ptr_t spe_ray_tracer_context;        //spe context
+  void* control_block_ray_tracer_ptr;              //pointer to the control block
+} ppu_thread_ray_tracer_data_t;
+
+#define SPU_THREADS 1
+#define SPU_TREELET_SIZE 8
 
 void *ppu_pthread_function(void *arg) {
 	spe_context_ptr_t ctx;
@@ -64,12 +76,35 @@ public:
 			);
 			//printf("Ray %d traced\n",ray_counter); //for debug
 		}
-
+		
+		//prepare scene annex
+		SceneAnnex sceneAnnex;
+		sceneAnnex.Ka = scene->getObject(0)->material().Ka;
+		sceneAnnex.Kd = scene->getObject(0)->material().Kd;
+		sceneAnnex.Ks = scene->getObject(0)->material().Ks;
+		sceneAnnex.m_eye = scene->getEye();
+		sceneAnnex.m_lightColor = scene->light().m_color;
+		sceneAnnex.m_lightPosition = scene->light().m_position;
+		sceneAnnex.shineReflectOpacity = Vec(scene->getObject(0)->material().shine,
+				scene->getObject(0)->material().reflect,
+				scene->getObject(0)->material().opacity);
+				
 		//test spu thread launch
 		printf("\nSPU thread test start.\n");
 		int i;
 		spe_context_ptr_t ctxs[SPU_THREADS];
 		pthread_t threads[SPU_THREADS];
+		control_block_ray_tracer_t control_blocks_ray_tracer[SPU_THREADS];
+		ppu_thread_ray_tracer_data_t ppu_thread_ray_tracer_data[SPU_THREADS];
+		
+		//calculate number of rays assigned to each ray - assume divisible
+		int l_perThreadRayCount = ray_count/SPU_THREADS;
+		
+		BihNodeAnnex treelets[SPU_THREADS][SPU_TREELET_SIZE];
+		FaceAnnex facelets[SPU_THREADS][SPU_TREELET_SIZE];
+		
+		//Write initial treelet to all treelets
+		
 		/* Create several SPE-threads to execute ’SPU’.*/
 		for (i=0; i<SPU_THREADS; i++) 
 		{
@@ -83,11 +118,52 @@ public:
 				perror("Failed loading program");
 				exit(1);
 			}
+			
+			//prepare initial treelets and facelets using bih tree root node
+			treelets[i][0].m_originalNode = 1;
+			setTreelet(&(treelets[i][0]),&(facelets[i][0]),tree);
+			
+			//prepare control block
+			control_blocks_ray_tracer[i].scene_addr = (unsigned long)&sceneAnnex;
+			control_blocks_ray_tracer[i].source_addr = (unsigned long)rays;
+			control_blocks_ray_tracer[i].out_addr = (unsigned long)image->data();
+			control_blocks_ray_tracer[i].rayIndexStart = i*l_perThreadRayCount;
+			control_blocks_ray_tracer[i].rayIndexEnd = control_blocks_ray_tracer[i].rayIndexStart + (l_perThreadRayCount-1);
+			control_blocks_ray_tracer[i].treelet_addr = (unsigned long)(&(treelets[i][0]));
+			control_blocks_ray_tracer[i].faces_addr = (unsigned long)(&(facelets[i][0]));
+			control_blocks_ray_tracer[i].imageWidth = image->width();
+			
+			//Load Thread Data
+			ppu_thread_ray_tracer_data[i].spe_ray_tracer_context = ctxs[i];
+			ppu_thread_ray_tracer_data[i].control_block_ray_tracer_ptr = &(control_blocks_ray_tracer[i]);
+			
 			/* Create thread for each SPE context */
-			if (pthread_create(&threads[i], NULL, &ppu_pthread_function,
-					&ctxs[i])) {
+			if (pthread_create(&threads[i], NULL, &ppu_pthread_function, &ppu_thread_ray_tracer_data[i]))
+			{
 				perror("Failed creating thread");
 				exit(1);
+			}
+			
+			int threadsCompleted=0;
+			while(threadsCompleted!=SPU_THREADS)
+			{
+				threadsCompleted=0;
+				for(int i=0; i<SPU_THREADS; i++)
+				{
+					if(treelets[i][0].m_originalNode != 2)						//if thread completes, it will write a value 2
+					{
+						bool refreshed = setTreelet(&(treelets[i][0]), &(facelets[i][0]),tree); //check if treelet needs to be refreshed with new path or reset
+						
+						//notify SPU if treelet was refreshed
+						if(refreshed)
+						{
+							spe_in_mbox_write(ctxs[i],0,1,SPE_MBOX_ANY_NONBLOCKING); //write to SPU mail inbox to notify tree refreshed
+																					//PPU does not wait for mailbox operation to complete
+						}
+					}
+					else
+						threadsCompleted++;
+				}
 			}
 		}
 		/* Wait for SPU-thread to complete execution.  */
@@ -449,6 +525,111 @@ public:
 
 		//return Color((float)r,(float)g,(float)b);
 		return l_rgb;
+	}
+	
+	static void setNodeAnnexToNull(BihNodeAnnex& nodeAnnex)
+	{
+		nodeAnnex.m_axisOrPrimitiveCount = -1;
+	}
+	
+	static void setNodeAnnex(BihNodeAnnex& nodeAnnex, const BihNode* node, const int& prevRelationship)
+	{
+		nodeAnnex.m_originalNode = (unsigned long)node;
+		nodeAnnex.m_prevNodeRelation = prevRelationship;
+		nodeAnnex.m_isLeaf = node->m_isLeaf;	
+		nodeAnnex.m_min = *(node->m_min);
+		nodeAnnex.m_max = *(node->m_max);
+		nodeAnnex.m_leftValue = *(node->m_leftValue);
+		nodeAnnex.m_rightValue = *(node->m_rightValue);
+		nodeAnnex.m_axisOrPrimitiveCount = *(node->m_axisOrPrimitiveCount);
+	}
+
+	static void setFaceAnnex(FaceAnnex& faceAnnex, const BihNode* node)
+	{
+		faceAnnex.m_faceNormal = node->m_primitive->normal();
+		faceAnnex.m_vertex1 = node->m_primitive->getVertex(0)->position();
+		faceAnnex.m_vertex2 = node->m_primitive->getVertex(1)->position();
+		faceAnnex.m_vertex3 = node->m_primitive->getVertex(2)->position();
+		faceAnnex.m_vertexNormal1 = node->m_primitive->getVertex(0)->normal();
+		faceAnnex.m_vertexNormal2 = node->m_primitive->getVertex(1)->normal();
+		faceAnnex.m_vertexNormal3 = node->m_primitive->getVertex(2)->normal();
+	}
+	
+	static bool setTreelet(BihNodeAnnex* nodeAnnex, FaceAnnex* faceAnnex, const BihNode* tree)
+	{
+		int nextNodeRelationship=-1;
+		int indexToSetNullOnwards=-1;
+		
+		//Reset to initial tree
+		if(nodeAnnex->m_originalNode == 1)
+		{
+			setNodeAnnex(nodeAnnex[0], tree,0); //assume tree root is definitely not a leaf node
+			const BihNode* prevNode = tree;
+			int prevRelationship = 0;
+			
+			for(int i=1; i<SPU_TREELET_SIZE; i++)
+			{
+				const BihNode* nextNode = getNextNodeInPath(prevNode,
+						prevRelationship,
+						nextNodeRelationship);
+				
+				if(nextNode==0)
+				{
+					indexToSetNullOnwards = i;
+					break;
+				}
+				
+				setNodeAnnex(nodeAnnex[i],nextNode,nextNodeRelationship);
+				if(nextNode->m_isLeaf)
+				{
+					setFaceAnnex(faceAnnex[0],nextNode);
+				}
+				
+				prevRelationship = nextNodeRelationship;
+				prevNode = nextNode;
+			}
+			return true;
+		}
+		//Continue traversal
+		else if(nodeAnnex->m_originalNode == 0)
+		{	
+			const BihNode* prevNode = (BihNode*)(nodeAnnex[1].m_originalNode);
+			int prevRelationship = nodeAnnex[2].m_axisOrPrimitiveCount;
+						
+			for(int i=0; i<SPU_TREELET_SIZE; i++)
+			{
+				const BihNode* nextNode = getNextNodeInPath(prevNode,
+						prevRelationship,
+						nextNodeRelationship);
+				
+				if(nextNode==0)
+				{
+					indexToSetNullOnwards = i;
+					break;
+				}
+				
+				setNodeAnnex(nodeAnnex[i],nextNode,nextNodeRelationship);
+				if(nextNode->m_isLeaf)
+				{
+					setFaceAnnex(faceAnnex[0],nextNode);
+				}
+				
+				prevRelationship = nextNodeRelationship;
+				prevNode = nextNode;
+			}
+			return true;
+		}
+		
+		if(indexToSetNullOnwards!=-1)
+		{
+			for(int i=indexToSetNullOnwards; i<SPU_TREELET_SIZE; i++)
+			{
+				setNodeAnnexToNull(nodeAnnex[i]);
+			}
+			return true;
+		}
+		else
+			return false;
 	}
 
 	/* Get the next node to move to in tree traversal

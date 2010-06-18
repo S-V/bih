@@ -16,7 +16,6 @@ public:
     float m_leftValue;			//inner
     float m_rightValue;		    //inner
     int m_axisOrPrimitiveCount; //both
-    int m_primitiveIndex;       //index of primitive face
     int m_prevNodeRelation;
     
     unsigned long m_originalNode;	//64 bit EA of original tree node
