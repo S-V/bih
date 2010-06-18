@@ -69,3 +69,8 @@ void Image::exportImage(const char* fileName)
     myFile.close();
 }
 
+unsigned char* Image::data()
+{
+	return m_rgb;
+}
+

@@ -25,6 +25,8 @@ public:
     unsigned char* getPixel(const int& index);
 	
 	void exportImage(const char* fileName);
+	
+	unsigned char* data();
 
 private:
     int m_width;
