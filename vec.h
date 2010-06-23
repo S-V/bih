@@ -279,7 +279,7 @@ public:
     
 public:
     //float m_val[3];
-	vec3D data;
+	vec3D data __attribute__ ((aligned(16)));
 };
 
 
