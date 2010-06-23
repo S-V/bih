@@ -19,6 +19,8 @@
 #include <spu_mfcio.h>
 
 extern spe_program_handle_t bihCellSPU;
+unsigned int mboxData=1234;
+BihNode*** treeletOrigins;
 
 typedef struct _ppu_thread_ray_generator_data 
 {
@@ -26,14 +28,17 @@ typedef struct _ppu_thread_ray_generator_data
   void* control_block_ray_tracer_ptr;              //pointer to the control block
 } ppu_thread_ray_tracer_data_t;
 
-#define SPU_THREADS 1
+#define SPU_THREADS 6
 #define SPU_TREELET_SIZE 8
 
-void *ppu_pthread_function(void *arg) {
+void *ppu_pthread_function(void *argp) {
 	spe_context_ptr_t ctx;
 	unsigned int entry= SPE_DEFAULT_ENTRY;
-	ctx = *((spe_context_ptr_t *)arg);
-	if (spe_context_run(ctx, &entry, 0, NULL, NULL, NULL) < 0) {
+	
+	ppu_thread_ray_tracer_data_t* thread_ray_tracer_data = (ppu_thread_ray_tracer_data_t *)argp;
+	ctx = thread_ray_tracer_data->spe_ray_tracer_context;
+	
+	if (spe_context_run(ctx, &entry, 0, thread_ray_tracer_data->control_block_ray_tracer_ptr, NULL, NULL) < 0) {
 		perror("Failed running context");
 		exit(1);
 	}
@@ -50,10 +55,13 @@ class TreeRelationshipException : public exception {
 
 class RayTracer {
 public:
-	static void rayTrace(const Scene* scene, Image* image, const BihNode* tree, Ray* rays) 
+	static void rayTrace(const Scene* scene, Image* image, BihNode* tree, Ray* rays) 
 	{
 		//int ray_counter = 0;
 		int ray_count = image->width() * image->height();
+		
+		unsigned char* rgb = new unsigned char[500*300*3];
+		//printf("PPU unsigned char: %d\n",sizeof(unsigned char));
 
 		//on ray 34172 - memory error - resolved - error due to missing copy constructor in Vec class, resulting in uninitialized pointers
 		/*image->setPixel(34172 / image->height(),
@@ -67,7 +75,8 @@ public:
 		 RayTracer::rayCast(&(rays[38747]), scene, tree) 
 		 );*/
 
-		//for(int ray_counter=77255;ray_counter < 77256;ray_counter++) 
+		//for(int ray_counter=77255;ray_counter < 77256;ray_counter++)
+		/*
 		for (int ray_counter=0; ray_counter < ray_count; ray_counter++) {
 			image->setPixel(ray_counter % image->width(), ray_counter
 					/ image->width(), RayTracer::rayCastStackless(
@@ -76,37 +85,77 @@ public:
 			);
 			//printf("Ray %d traced\n",ray_counter); //for debug
 		}
+		*/
 		
 		//prepare scene annex
-		SceneAnnex sceneAnnex;
-		sceneAnnex.Ka = scene->getObject(0)->material().Ka;
-		sceneAnnex.Kd = scene->getObject(0)->material().Kd;
-		sceneAnnex.Ks = scene->getObject(0)->material().Ks;
-		sceneAnnex.m_eye = scene->getEye();
-		sceneAnnex.m_lightColor = scene->light().m_color;
-		sceneAnnex.m_lightPosition = scene->light().m_position;
-		sceneAnnex.shineReflectOpacity = Vec(scene->getObject(0)->material().shine,
+		SceneAnnex* sceneAnnex = new SceneAnnex();
+		sceneAnnex->Ka = scene->getObject(0)->material().Ka;
+		sceneAnnex->Kd = scene->getObject(0)->material().Kd;
+		sceneAnnex->Ks = scene->getObject(0)->material().Ks;
+		sceneAnnex->m_eye = scene->getEye();
+		sceneAnnex->m_lightColor = scene->light().m_color;
+		sceneAnnex->m_lightPosition = scene->light().m_position;
+		sceneAnnex->shineReflectOpacity = Vec(scene->getObject(0)->material().shine,
 				scene->getObject(0)->material().reflect,
 				scene->getObject(0)->material().opacity);
+		/*
+		printf("Scene at PPU:");
+		printf("        Eye x: %.2f\n",sceneAnnex->m_eye[0]);
+		printf("        Eye y: %.2f\n",sceneAnnex->m_eye[1]);
+		printf("        Eye z: %.2f\n",sceneAnnex->m_eye[2]);
+		printf("        Color x: %.2f\n",sceneAnnex->m_lightColor[0]);
+		printf("        Color y: %.2f\n",sceneAnnex->m_lightColor[1]);
+		printf("        Color z: %.2f\n",sceneAnnex->m_lightColor[2]);
+		printf("        Light x: %.2f\n",sceneAnnex->m_lightPosition[0]);
+		printf("        Light y: %.2f\n",sceneAnnex->m_lightPosition[1]);
+		printf("        Light z: %.2f\n",sceneAnnex->m_lightPosition[2]);
+		printf("        a x: %.2f\n",sceneAnnex->Ka[0]);
+		printf("        a y: %.2f\n",sceneAnnex->Ka[1]);
+		printf("        a z: %.2f\n",sceneAnnex->Ka[2]);
+		printf("        d x: %.2f\n",sceneAnnex->Kd[0]);
+		printf("        d y: %.2f\n",sceneAnnex->Kd[1]);
+		printf("        d z: %.2f\n",sceneAnnex->Kd[2]);
+		printf("        s x: %.2f\n",sceneAnnex->Ks[0]);
+		printf("        s y: %.2f\n",sceneAnnex->Ks[1]);
+		printf("        s z: %.2f\n",sceneAnnex->Ks[2]);
+		printf("        sro x: %.2f\n",sceneAnnex->shineReflectOpacity[0]);
+		printf("        sro y: %.2f\n",sceneAnnex->shineReflectOpacity[1]);
+		printf("        sro z: %.2f\n",sceneAnnex->shineReflectOpacity[2]);*/
 				
 		//test spu thread launch
-		printf("\nSPU thread test start.\n");
+		printf("\nPPU - Initialize SPU threads...\n");
 		int i;
-		spe_context_ptr_t ctxs[SPU_THREADS];
-		pthread_t threads[SPU_THREADS];
-		control_block_ray_tracer_t control_blocks_ray_tracer[SPU_THREADS];
-		ppu_thread_ray_tracer_data_t ppu_thread_ray_tracer_data[SPU_THREADS];
+		spe_context_ptr_t* ctxs = new spe_context_ptr_t[SPU_THREADS];
+		pthread_t* threads = new pthread_t[SPU_THREADS];
+		control_block_ray_tracer_t* control_blocks_ray_tracer = new control_block_ray_tracer_t[SPU_THREADS];
+		ppu_thread_ray_tracer_data_t* ppu_thread_ray_tracer_data = new ppu_thread_ray_tracer_data_t[SPU_THREADS];
 		
 		//calculate number of rays assigned to each ray - assume divisible
 		int l_perThreadRayCount = ray_count/SPU_THREADS;
 		
-		BihNodeAnnex treelets[SPU_THREADS][SPU_TREELET_SIZE];
-		FaceAnnex facelets[SPU_THREADS][SPU_TREELET_SIZE];
+		printf("PPU Per Thread Ray Count: %d\n", l_perThreadRayCount);
+		
+		BihNodeAnnex** treelets = new BihNodeAnnex*[SPU_THREADS];
+		for(int i=0;i<SPU_THREADS; i++)
+		{
+		    treelets[i] = new BihNodeAnnex[SPU_TREELET_SIZE];
+		}
+		FaceAnnex** facelets = new FaceAnnex*[SPU_THREADS];
+		for(int i=0;i<SPU_THREADS; i++)
+		{
+			facelets[i] = new FaceAnnex[SPU_TREELET_SIZE];
+		}
+		
+		treeletOrigins = new BihNode**[SPU_THREADS];
+		for(int i=0;i<SPU_THREADS; i++)
+		{
+			treeletOrigins[i] = new BihNode*[SPU_TREELET_SIZE];
+		}
 		
 		//Write initial treelet to all treelets
 		
 		/* Create several SPE-threads to execute ’SPU’.*/
-		for (i=0; i<SPU_THREADS; i++) 
+		for (unsigned int i=0; i<SPU_THREADS; i++) 
 		{
 			/* Create context */
 			if ((ctxs[i] = spe_context_create(0, NULL)) == NULL) {
@@ -121,17 +170,40 @@ public:
 			
 			//prepare initial treelets and facelets using bih tree root node
 			treelets[i][0].m_originalNode = 1;
-			setTreelet(&(treelets[i][0]),&(facelets[i][0]),tree);
+			setTreelet(&(treelets[i][0]),&(facelets[i][0]),tree, &(ctxs[i]), treeletOrigins[i]);
 			
 			//prepare control block
-			control_blocks_ray_tracer[i].scene_addr = (unsigned long)&sceneAnnex;
-			control_blocks_ray_tracer[i].source_addr = (unsigned long)rays;
-			control_blocks_ray_tracer[i].out_addr = (unsigned long)image->data();
-			control_blocks_ray_tracer[i].rayIndexStart = i*l_perThreadRayCount;
-			control_blocks_ray_tracer[i].rayIndexEnd = control_blocks_ray_tracer[i].rayIndexStart + (l_perThreadRayCount-1);
-			control_blocks_ray_tracer[i].treelet_addr = (unsigned long)(&(treelets[i][0]));
-			control_blocks_ray_tracer[i].faces_addr = (unsigned long)(&(facelets[i][0]));
-			control_blocks_ray_tracer[i].imageWidth = image->width();
+			
+			
+			unsigned int l_width = image->width();
+			unsigned int l_start = i*l_perThreadRayCount;
+			unsigned int l_end = (unsigned int)(l_start + (l_perThreadRayCount-1));
+			unsigned long long l_rayAddr = (unsigned long long)rays;
+			//unsigned long long l_outAddr = (unsigned long long)image->data();
+			unsigned long long l_outAddr = (unsigned long long)&(rgb[0]);
+			unsigned long long l_sceneAddr = (unsigned long long)sceneAnnex;
+			unsigned long long l_treeletAddr = (unsigned long long)(&(treelets[i][0]));
+			unsigned long long l_faceletsAddr = (unsigned long long)(&(facelets[i][0]));
+			
+			printf("Image width: %d\n",l_width);
+			printf("Ray Start: %d\n",l_start);
+			printf("Ray End: %d\n",l_end);
+			printf("Rays Addr   :    %llx\n",l_rayAddr);
+			printf("Out Addr    :    %llx\n",l_outAddr);
+			printf("Scene Addr    :    %llx\n",l_sceneAddr);
+			printf("Treelet Addr    :    %llx\n",l_treeletAddr);
+			printf("Facelets Addr    :    %llx\n",l_faceletsAddr);
+						
+			control_blocks_ray_tracer[i].imageWidth = l_width;
+			control_blocks_ray_tracer[i].rayIndexStart = l_start;
+			control_blocks_ray_tracer[i].rayIndexEnd = l_end;
+			control_blocks_ray_tracer[i].source_addr = l_rayAddr;
+			control_blocks_ray_tracer[i].out_addr = l_outAddr;
+			control_blocks_ray_tracer[i].scene_addr = l_sceneAddr;
+			control_blocks_ray_tracer[i].treelet_addr = l_treeletAddr;
+			control_blocks_ray_tracer[i].faces_addr = l_faceletsAddr;
+			
+			//printf("PPU out addr %llx\n",l_outAddr);
 			
 			//Load Thread Data
 			ppu_thread_ray_tracer_data[i].spe_ray_tracer_context = ctxs[i];
@@ -144,28 +216,24 @@ public:
 				exit(1);
 			}
 			
-			int threadsCompleted=0;
-			while(threadsCompleted!=SPU_THREADS)
-			{
-				threadsCompleted=0;
-				for(int i=0; i<SPU_THREADS; i++)
+			
+		}
+		
+		int threadsCompleted=0;
+		while(threadsCompleted!=SPU_THREADS)
+		{
+			threadsCompleted=0;
+			for(int i=0; i<SPU_THREADS; i++)
+			{					
+				if((treelets[i][0].m_axisOrPrimitiveCount == -2) || (treelets[i][0].m_axisOrPrimitiveCount == -3))
 				{
-					if(treelets[i][0].m_originalNode != 2)						//if thread completes, it will write a value 2
-					{
-						bool refreshed = setTreelet(&(treelets[i][0]), &(facelets[i][0]),tree); //check if treelet needs to be refreshed with new path or reset
-						
-						//notify SPU if treelet was refreshed
-						if(refreshed)
-						{
-							spe_in_mbox_write(ctxs[i],0,1,SPE_MBOX_ANY_NONBLOCKING); //write to SPU mail inbox to notify tree refreshed
-																					//PPU does not wait for mailbox operation to complete
-						}
-					}
-					else
-						threadsCompleted++;
+					setTreelet(&(treelets[i][0]), &(facelets[i][0]),tree,&(ctxs[i]),treeletOrigins[i]);
 				}
+				else if(treelets[i][0].m_axisOrPrimitiveCount == -4) //if thread completes, it will write a value -4
+					threadsCompleted++;
 			}
 		}
+		
 		/* Wait for SPU-thread to complete execution.  */
 		for (i=0; i<SPU_THREADS; i++) {
 			if (pthread_join(threads[i], NULL)) {
@@ -534,14 +602,31 @@ public:
 	
 	static void setNodeAnnex(BihNodeAnnex& nodeAnnex, const BihNode* node, const int& prevRelationship)
 	{
-		nodeAnnex.m_originalNode = (unsigned long)node;
+		//printf("Set Node 1.\n");
+		nodeAnnex.m_originalNode = (unsigned long long)node;
+		//printf("Set Node 2.\n");
 		nodeAnnex.m_prevNodeRelation = prevRelationship;
-		nodeAnnex.m_isLeaf = node->m_isLeaf;	
-		nodeAnnex.m_min = *(node->m_min);
-		nodeAnnex.m_max = *(node->m_max);
-		nodeAnnex.m_leftValue = *(node->m_leftValue);
-		nodeAnnex.m_rightValue = *(node->m_rightValue);
+		//printf("Set Node 3.\n");
 		nodeAnnex.m_axisOrPrimitiveCount = *(node->m_axisOrPrimitiveCount);
+		//printf("Set Node 4.\n");
+		nodeAnnex.m_min = *(node->m_min);
+		//printf("Set Node 5.\n");
+		nodeAnnex.m_max = *(node->m_max);
+		//printf("Set Node 6.\n");
+		if(node->m_leftChild)
+			nodeAnnex.m_leftValue = *(node->m_leftValue);
+		else
+			nodeAnnex.m_leftValue = 0;
+		//printf("Set Node 7.\n");
+		if(node->m_rightChild)
+			nodeAnnex.m_rightValue = *(node->m_rightValue);
+		else
+			nodeAnnex.m_rightValue = 0;
+		//printf("Set Node 8.\n");
+		if(node->m_isLeaf)
+		{
+			nodeAnnex.m_axisOrPrimitiveCount = -5;
+		}
 	}
 
 	static void setFaceAnnex(FaceAnnex& faceAnnex, const BihNode* node)
@@ -555,21 +640,24 @@ public:
 		faceAnnex.m_vertexNormal3 = node->m_primitive->getVertex(2)->normal();
 	}
 	
-	static bool setTreelet(BihNodeAnnex* nodeAnnex, FaceAnnex* faceAnnex, const BihNode* tree)
+	static bool setTreelet(BihNodeAnnex* nodeAnnex, FaceAnnex* faceAnnex, BihNode* tree, spe_context_ptr_t* ctx, BihNode** treeletOrigin)
 	{
 		int nextNodeRelationship=-1;
 		int indexToSetNullOnwards=-1;
 		
 		//Reset to initial tree
-		if(nodeAnnex->m_originalNode == 1)
+		if(nodeAnnex->m_axisOrPrimitiveCount == -2)
 		{
+			//printf("PPU Refreshing Treelet. Reset to root.\n");
+			
 			setNodeAnnex(nodeAnnex[0], tree,0); //assume tree root is definitely not a leaf node
-			const BihNode* prevNode = tree;
+			treeletOrigin[0]=tree;
+			BihNode* prevNode = tree;
 			int prevRelationship = 0;
 			
 			for(int i=1; i<SPU_TREELET_SIZE; i++)
 			{
-				const BihNode* nextNode = getNextNodeInPath(prevNode,
+				BihNode* nextNode = getNextNodeInPath(prevNode,
 						prevRelationship,
 						nextNodeRelationship);
 				
@@ -578,58 +666,126 @@ public:
 					indexToSetNullOnwards = i;
 					break;
 				}
-				
+				//printf("isLeaf: %d\n",nextNode->m_isLeaf);
 				setNodeAnnex(nodeAnnex[i],nextNode,nextNodeRelationship);
-				if(nextNode->m_isLeaf)
+				treeletOrigin[i]=nextNode;
+				
+				if(nextNode->m_isLeaf == 1)
 				{
-					setFaceAnnex(faceAnnex[0],nextNode);
+					setFaceAnnex(faceAnnex[i],nextNode);
 				}
+				
+				//printf("PPU is leaf: %d\n",nextNode->m_isLeaf);
 				
 				prevRelationship = nextNodeRelationship;
 				prevNode = nextNode;
 			}
-			return true;
+			
+			//printf("PPU Refreshing Treelet. Reset to root complete.\n");
+			//printf("PPU Treelet refresh complete. Notifying thread\n");
+			//spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ANY_NONBLOCKING);
+			if(indexToSetNullOnwards==-1)
+			{
+				//while(!spe_in_mbox_status()){}
+				//printf("PPU before mbox write\n");
+				spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ALL_BLOCKING);
+				//printf("PPU after mbox write\n");
+				//printf("PPU Treelet refresh complete. Thread notification ack.\n");
+				return true;
+			}
 		}
 		//Continue traversal
-		else if(nodeAnnex->m_originalNode == 0)
+		else if(nodeAnnex->m_axisOrPrimitiveCount == -3)
 		{	
-			const BihNode* prevNode = (BihNode*)(nodeAnnex[1].m_originalNode);
+			//printf("PPU Refreshing Treelet. Refresh begin.\n");
+			
+			//BihNode* prevNode = treeletOrigin[nodeAnnex[1].m_axisOrPrimitiveCount];
+			//printf("PPU last node %llx\n",nodeAnnex[1].m_originalNode);
+			BihNode* prevNode = (BihNode*)nodeAnnex[1].m_originalNode;
+			/*
+			printf("isleaf: %d\n", (*prevNode).m_isLeaf);
+			printf("min x %.2f\n",(*(prevNode->m_min))[0]);
+			printf("min y %.2f\n",(*(prevNode->m_min))[1]);
+			printf("min z %.2f\n",(*(prevNode->m_min))[2]);
+			printf("max x %.2f\n",(*(prevNode->m_max))[0]);
+			printf("max y %.2f\n",(*(prevNode->m_max))[1]);
+			printf("max z %.2f\n",(*(prevNode->m_max))[2]);
+			*/
 			int prevRelationship = nodeAnnex[2].m_axisOrPrimitiveCount;
+			
+			//printf("PPU Refreshing Treelet. 1.\n");
+			
+			//printf("prev node relationship: %d\n",prevRelationship);
 						
 			for(int i=0; i<SPU_TREELET_SIZE; i++)
 			{
-				const BihNode* nextNode = getNextNodeInPath(prevNode,
+				//printf("PPU Refreshing Treelet. 2i.\n");
+				BihNode* nextNode = getNextNodeInPath(prevNode,
 						prevRelationship,
 						nextNodeRelationship);
 				
 				if(nextNode==0)
 				{
+					//printf("NO NEXT NODE, index: %d",i);
 					indexToSetNullOnwards = i;
 					break;
 				}
-				
+				//printf("PPU Refreshing Treelet. 2ii.\n");
+				//printf("isLeaf: %d\n",nextNode->m_isLeaf);
 				setNodeAnnex(nodeAnnex[i],nextNode,nextNodeRelationship);
-				if(nextNode->m_isLeaf)
+				//printf("PPU Refreshing Treelet. 2iii.\n");
+				treeletOrigin[i]=nextNode;
+				
+				if(nextNode->m_isLeaf == 1)
 				{
 					setFaceAnnex(faceAnnex[0],nextNode);
 				}
 				
+				//printf("PPU Refreshing Treelet. 2iv.\n");
 				prevRelationship = nextNodeRelationship;
 				prevNode = nextNode;
 			}
-			return true;
+			
+			//printf("PPU Refreshing Treelet. 3.\n");
+			//printf("PPU Refreshing Treelet. Refresh end.\n");
+			//printf("PPU Treelet refresh complete. Notifying thread\n");
+			//spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ANY_NONBLOCKING);
+			if(indexToSetNullOnwards==-1)
+			{
+				//while(!spe_in_mbox_status()){}
+				//printf("PPU before mbox write\n");
+				spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ALL_BLOCKING);
+				//printf("PPU after mbox write\n");
+				//spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ALL_BLOCKING);
+				//printf("PPU Treelet refresh complete. Thread notification ack.\n");
+				return true;
+			}
 		}
 		
 		if(indexToSetNullOnwards!=-1)
 		{
+			//printf("Set to null starting index %d\n",indexToSetNullOnwards);
 			for(int i=indexToSetNullOnwards; i<SPU_TREELET_SIZE; i++)
 			{
 				setNodeAnnexToNull(nodeAnnex[i]);
+				treeletOrigin[i]=0;
 			}
+			//printf("PPU Refreshing Treelet complete.\n");
+			//printf("PPU Treelet refresh complete. Notifying thread\n");
+			//spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ANY_NONBLOCKING);
+			//while(!spu_stat_in_mbox()){}
+			//printf("PPU b4 mbox write\n");
+			spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ALL_BLOCKING);
+			//printf("PPU after mbox write\n");
+			//spe_in_mbox_write(*ctx,&mboxData,1,SPE_MBOX_ALL_BLOCKING);
+			//printf("PPU Treelet refresh complete. Thread notification ack.\n");
 			return true;
 		}
 		else
+		{
+			//printf("PPU Refreshing Treelet error.\n");
 			return false;
+		}
 	}
 
 	/* Get the next node to move to in tree traversal
@@ -639,7 +795,7 @@ public:
 	 *                     2 - right child
 	 *         
 	 */
-	static const BihNode* getNextNodeInPath(const BihNode* currentNode,
+	static BihNode* getNextNodeInPath(BihNode* currentNode,
 			const int& prevNodeRelation, int& nextNodeRelation) {
 		bool returnParent=false;
 
@@ -683,11 +839,11 @@ public:
 	}
 
 	static Vec rayCastStackless(Ray* ray, const Scene* scene,
-			const BihNode* tree) {
+			BihNode* tree) {
 		Vec l_color(0, 0, 0);
 
 		// Traversal variables
-		const BihNode* currentNode = tree;
+		BihNode* currentNode = tree;
 		int prevNodeRelation = 0; //first traversal step is downwards, relationship to next node is parent
 		int nextNodeRelation = -1;
 
@@ -702,7 +858,7 @@ public:
 		while (currentNode!=0) {
 			//printf("node %d\n",currentNode->m_nodeID);
 
-			if (currentNode->m_isLeaf) {
+			if (currentNode->m_isLeaf ==1) {
 				//printf("Hit Leaf\n");
 
 				// Get pointer to Face
@@ -841,7 +997,7 @@ public:
 			// ei.  If element is invalid node
 			// Obsolete - was in un-optimized version
 
-			if (currentNode->m_isLeaf) {
+			if (currentNode->m_isLeaf ==1) {
 				// Get pointer to Face
 				Face* currentPolygon = currentNode->m_primitive;
 

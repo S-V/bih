@@ -18,7 +18,7 @@ public:
     void buildBIH(Scene* scene);
 	void buildBIHRecur(BihNode* currentNode, const int& minIndex, const int& maxIndex, const Vec& min, const Vec& max, const Vec& minBox, const Vec& maxBox);
 	
-	const BihNode* tree();
+	BihNode* tree();
 
     void toConsole();
 

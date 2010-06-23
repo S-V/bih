@@ -13,7 +13,7 @@ Bih::~Bih()
         delete m_tree;
 }
 
-const BihNode* Bih::tree()
+BihNode* Bih::tree()
 {
 	return m_tree;
 }
